@@ -156,14 +156,8 @@ def _delete_plugin_entry(request,
     try:
         obj = entry_model_cls._default_manager \
                              .select_related('form_entry') \
-                             .get(pk=entry_id,
-                                  form_entry__user__pk=request.user.pk)
-    except ObjectDoesNotExist as err:
-        raise Http404(
-            ugettext("{0} not found.").format(
-                entry_model_cls._meta.verbose_name
-            )
-        )
+        except ObjectDoesNotExist as e:
+            raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
 
     form_entry = obj.form_entry
     plugin = obj.get_plugin(request=request)
@@ -255,7 +249,6 @@ def dashboard(request, theme=None, template_name=None):
     :return django.http.HttpResponse:
     """
     form_entries = FormEntry._default_manager \
-                            .filter(user__pk=request.user.pk) \
                             .select_related('user')
 
     context = {
@@ -425,7 +418,7 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
         form_entry = FormEntry._default_manager \
                               .select_related('user') \
                               .prefetch_related('formelemententry_set') \
-                              .get(pk=form_entry_id, user__pk=request.user.pk)
+                              .get(pk=form_entry_id)
     # .prefetch_related('formhandlerentry_set') \
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
@@ -518,7 +511,7 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
     # all_form_entries = FormEntry._default_manager \
     #                            .only('id', 'name', 'slug') \
     #                            .filter(user__pk=request.user.pk)
-
+    all_form_entries = FormEntry._default_manager.only('id', 'name', 'slug')
     # List of form element plugins allowed to user
     user_form_element_plugins = get_user_form_element_plugins_grouped(
         request.user
@@ -768,8 +761,7 @@ def edit_form_element_entry(request,
         obj = FormElementEntry._default_manager \
                               .select_related('form_entry',
                                               'form_entry__user') \
-                              .get(pk=form_element_entry_id,
-                                   form_entry__user__pk=request.user.pk)
+                              .get(pk=form_element_entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form element entry not found."))
 
@@ -2346,7 +2338,7 @@ def export_form_entry(request, form_entry_id, template_name=None):
     """
     try:
         form_entry = FormEntry._default_manager \
-                              .get(pk=form_entry_id, user__pk=request.user.pk)
+                              .get(pk=form_entry_id)
 
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
@@ -2555,7 +2547,7 @@ def export_form_wizard_entry(request,
     """
     try:
         form_wizard_entry = FormWizardEntry._default_manager \
-            .get(pk=form_wizard_entry_id, user__pk=request.user.pk)
+            .get(pk=form_wizard_entry_id)
 
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form wizard entry not found."))
