@@ -130,6 +130,7 @@ __all__ = (
 
 logger = logging.getLogger(__name__)
 
+
 # *****************************************************************************
 # *****************************************************************************
 # *********************************** Generic *********************************
@@ -155,24 +156,25 @@ def _delete_plugin_entry(request,
     """
     try:
         obj = entry_model_cls._default_manager \
-                             .select_related('form_entry') \
-        except ObjectDoesNotExist as e:
-            raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
+            .select_related('form_entry') 
+    except ObjectDoesNotExist as e:
+        raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
 
-    form_entry = obj.form_entry
-    plugin = obj.get_plugin(request=request)
-    plugin.request = request
 
-    plugin._delete_plugin_data()
+        form_entry = obj.form_entry
+        plugin = obj.get_plugin(request=request)
+        plugin.request = request
 
-    obj.delete()
+        plugin._delete_plugin_data()
 
-    messages.info(request, message.format(plugin.name))
+        obj.delete()
 
-    redirect_url = reverse(
-        'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
-    )
-    return redirect("{0}{1}".format(redirect_url, html_anchor))
+        messages.info(request, message.format(plugin.name))
+
+        redirect_url = reverse(
+            'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+        )
+        return redirect("{0}{1}".format(redirect_url, html_anchor))
 
 
 def _delete_wizard_plugin_entry(request,
@@ -192,9 +194,9 @@ def _delete_wizard_plugin_entry(request,
     """
     try:
         obj = entry_model_cls._default_manager \
-                             .select_related('form_wizard_entry') \
-                             .get(pk=entry_id,
-                                  form_wizard_entry__user__pk=request.user.pk)
+            .select_related('form_wizard_entry') \
+            .get(pk=entry_id,
+                 form_wizard_entry__user__pk=request.user.pk)
     except ObjectDoesNotExist as err:
         raise Http404(
             ugettext("{0} not found.").format(
@@ -249,7 +251,7 @@ def dashboard(request, theme=None, template_name=None):
     :return django.http.HttpResponse:
     """
     form_entries = FormEntry._default_manager \
-                            .select_related('user')
+        .select_related('user')
 
     context = {
         'form_entries': form_entries,
@@ -271,6 +273,7 @@ def dashboard(request, theme=None, template_name=None):
         return render_to_response(
             template_name, context, context_instance=RequestContext(request)
         )
+
 
 # *****************************************************************************
 # ****************************** Form wizards *********************************
@@ -318,6 +321,7 @@ def form_wizards_dashboard(request, theme=None, template_name=None):
         return render_to_response(
             template_name, context, context_instance=RequestContext(request)
         )
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -391,6 +395,7 @@ def create_form_entry(request, theme=None, template_name=None):
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # **************************************************************************
 # ******************************* Edit form entry **************************
 # **************************************************************************
@@ -416,9 +421,9 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
     """
     try:
         form_entry = FormEntry._default_manager \
-                              .select_related('user') \
-                              .prefetch_related('formelemententry_set') \
-                              .get(pk=form_entry_id)
+            .select_related('user') \
+            .prefetch_related('formelemententry_set') \
+            .get(pk=form_entry_id)
     # .prefetch_related('formhandlerentry_set') \
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
@@ -482,7 +487,7 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
                 return redirect(
                     reverse('fobi.edit_form_entry',
                             kwargs={'form_entry_id': form_entry_id})
-                    )
+                )
             except IntegrityError as err:
                 messages.info(
                     request,
@@ -571,6 +576,7 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # ********************************* Delete form entry *************************
 # *****************************************************************************
@@ -607,6 +613,7 @@ def delete_form_entry(request, form_entry_id, template_name=None):
 
     return redirect('fobi.dashboard')
 
+
 # *****************************************************************************
 # **************************** Add form element entry *************************
 # *****************************************************************************
@@ -630,8 +637,8 @@ def add_form_element_entry(request,
     """
     try:
         form_entry = FormEntry._default_manager \
-                              .prefetch_related('formelemententry_set') \
-                              .get(pk=form_entry_id)
+            .prefetch_related('formelemententry_set') \
+            .get(pk=form_entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
 
@@ -690,7 +697,7 @@ def add_form_element_entry(request,
         # Handling the position
         position = 1
         records = FormElementEntry.objects.filter(form_entry=form_entry) \
-                                  .aggregate(models.Max('position'))
+            .aggregate(models.Max('position'))
         if records:
             try:
                 position = records['{0}__max'.format('position')] + 1
@@ -738,6 +745,7 @@ def add_form_element_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** Edit form element entry ************************
 # *****************************************************************************
@@ -759,9 +767,9 @@ def edit_form_element_entry(request,
     """
     try:
         obj = FormElementEntry._default_manager \
-                              .select_related('form_entry',
-                                              'form_entry__user') \
-                              .get(pk=form_element_entry_id)
+            .select_related('form_entry',
+                            'form_entry__user') \
+            .get(pk=form_element_entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form element entry not found."))
 
@@ -787,10 +795,10 @@ def edit_form_element_entry(request,
         )
 
         form_elements = FormElementEntry._default_manager \
-                                        .select_related('form_entry',
-                                                        'form_entry__user') \
-                                        .exclude(pk=form_element_entry_id) \
-                                        .filter(form_entry=form_entry)
+            .select_related('form_entry',
+                            'form_entry__user') \
+            .exclude(pk=form_element_entry_id) \
+            .filter(form_entry=form_entry)
 
         form.validate_plugin_data(form_elements, request=request)
 
@@ -842,6 +850,7 @@ def edit_form_element_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** Delete form element entry **********************
 # *****************************************************************************
@@ -866,6 +875,7 @@ def delete_form_element_entry(request, form_element_entry_id):
         ),
         html_anchor='?active_tab=tab-form-elements'
     )
+
 
 # *****************************************************************************
 # **************************** Add form handler entry *************************
@@ -993,6 +1003,7 @@ def add_form_handler_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** Edit form handler entry ************************
 # *****************************************************************************
@@ -1014,8 +1025,8 @@ def edit_form_handler_entry(request,
     """
     try:
         obj = FormHandlerEntry._default_manager \
-                              .select_related('form_entry') \
-                              .get(pk=form_handler_entry_id)
+            .select_related('form_entry') \
+            .get(pk=form_handler_entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form handler entry not found."))
 
@@ -1086,6 +1097,7 @@ def edit_form_handler_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** Delete form handler entry **********************
 # *****************************************************************************
@@ -1110,6 +1122,7 @@ def delete_form_handler_entry(request, form_handler_entry_id):
         ),
         html_anchor='?active_tab=tab-form-handlers'
     )
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -1185,6 +1198,7 @@ def create_form_wizard_entry(request, theme=None, template_name=None):
         return render_to_response(
             template_name, context, context_instance=RequestContext(request)
         )
+
 
 # **************************************************************************
 # *************************** Edit form wizard entry ***********************
@@ -1311,9 +1325,9 @@ def edit_form_wizard_entry(request, form_wizard_entry_id, theme=None,
     # In case of success, we don't need this (since redirect would happen).
     # Thus, fetch only if needed.
     form_wizard_form_entries = form_wizard_entry.formwizardformentry_set \
-        .all().select_related('form_entry').order_by('position')[:]
+                                   .all().select_related('form_entry').order_by('position')[:]
     form_wizard_handlers = form_wizard_entry.formwizardhandlerentry_set \
-                                            .all()[:]
+                               .all()[:]
     used_form_wizard_handler_uids = [form_wizard_handler.plugin_uid
                                      for form_wizard_handler
                                      in form_wizard_handlers]
@@ -1359,6 +1373,7 @@ def edit_form_wizard_entry(request, form_wizard_entry_id, theme=None,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** Delete form wizard entry ***********************
 # *****************************************************************************
@@ -1399,6 +1414,7 @@ def delete_form_wizard_entry(request, form_wizard_entry_id,
 
     return redirect('fobi.form_wizards_dashboard')
 
+
 # *****************************************************************************
 # ************************ View form wizard entry *****************************
 # *****************************************************************************
@@ -1423,7 +1439,7 @@ class FormWizardView(DynamicSessionWizardView):
             'fobi_theme': self.fobi_theme,
             'fobi_form_title': form_entry.title,
             'fobi_form_wizard_title': self.form_wizard_entry.title,
-            'steps_range': range(1, self.steps.count+1),
+            'steps_range': range(1, self.steps.count + 1),
         })
 
         return context_data
@@ -1449,9 +1465,9 @@ class FormWizardView(DynamicSessionWizardView):
             form_wizard_form_entry.form_entry
             for form_wizard_form_entry
             in form_wizard_entry.formwizardformentry_set
-                                .all()
-                                .select_related('form_entry')
-        ]
+                .all()
+                .select_related('form_entry')
+            ]
         form_list = []
         form_entry_mapping = {}
         form_element_entry_mapping = {}
@@ -1519,7 +1535,7 @@ class FormWizardView(DynamicSessionWizardView):
 
         form_current_step = management_form.cleaned_data['current_step']
         if (form_current_step != self.steps.current and
-                self.storage.current_step is not None):
+                    self.storage.current_step is not None):
             # form refreshed, change current step
             self.storage.current_step = form_current_step
 
@@ -1678,6 +1694,7 @@ class FormWizardView(DynamicSessionWizardView):
                                args=[form_wizard_entry.slug])
         return HttpResponseRedirect(redirect_url)
 
+
 # *****************************************************************************
 # ************************** View form wizard entry success *******************
 # *****************************************************************************
@@ -1717,6 +1734,7 @@ def form_wizard_entry_submitted(request, form_wizard_entry_slug=None,
         return render_to_response(
             template_name, context, context_instance=RequestContext(request)
         )
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -1820,6 +1838,7 @@ def add_form_wizard_form_entry(request,
         )
     )
 
+
 # *****************************************************************************
 # ************************** Delete form wizard form entry ********************
 # *****************************************************************************
@@ -1836,10 +1855,10 @@ def delete_form_wizard_form_entry(request, form_wizard_form_entry_id):
     """
     try:
         obj = FormWizardFormEntry \
-                ._default_manager \
-                .select_related('form_wizard_entry') \
-                .get(pk=form_wizard_form_entry_id,
-                     form_wizard_entry__user__pk=request.user.pk)
+            ._default_manager \
+            .select_related('form_wizard_entry') \
+            .get(pk=form_wizard_form_entry_id,
+                 form_wizard_entry__user__pk=request.user.pk)
     except ObjectDoesNotExist as err:
         raise Http404(
             ugettext("{0} not found.").format(
@@ -1864,6 +1883,7 @@ def delete_form_wizard_form_entry(request, form_wizard_form_entry_id):
     return redirect(
         "{0}{1}".format(redirect_url, '?active_tab=tab-form-elements')
     )
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -2005,6 +2025,7 @@ def add_form_wizard_handler_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # ************************ Edit form wizard handler entry *********************
 # *****************************************************************************
@@ -2105,6 +2126,7 @@ def edit_form_wizard_handler_entry(request,
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # *********************** Delete form wizard handler entry ********************
 # *****************************************************************************
@@ -2129,6 +2151,7 @@ def delete_form_wizard_handler_entry(request, form_wizard_handler_entry_id):
         ),
         html_anchor='?active_tab=tab-form-handlers'
     )
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -2155,7 +2178,7 @@ def view_form_entry(request, form_entry_slug, theme=None, template_name=None):
         if not request.user.is_authenticated():
             kwargs.update({'is_public': True})
         form_entry = FormEntry._default_manager.select_related('user') \
-                              .get(**kwargs)
+            .get(**kwargs)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
 
@@ -2274,6 +2297,7 @@ def view_form_entry(request, form_entry_slug, theme=None, template_name=None):
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # **************************** View form entry success ************************
 # *****************************************************************************
@@ -2319,6 +2343,7 @@ def form_entry_submitted(request, form_entry_slug=None, template_name=None):
             template_name, context, context_instance=RequestContext(request)
         )
 
+
 # *****************************************************************************
 # *****************************************************************************
 # **************************** Export form entry ******************************
@@ -2338,7 +2363,7 @@ def export_form_entry(request, form_entry_id, template_name=None):
     """
     try:
         form_entry = FormEntry._default_manager \
-                              .get(pk=form_entry_id)
+            .get(pk=form_entry_id)
 
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
@@ -2381,6 +2406,7 @@ def export_form_entry(request, form_entry_id, template_name=None):
     data_exporter = JSONDataExporter(json.dumps(data), form_entry.slug)
 
     return data_exporter.export()
+
 
 # *****************************************************************************
 # *****************************************************************************
@@ -2524,6 +2550,7 @@ def import_form_entry(request, template_name=None):
         return render_to_response(
             template_name, context, context_instance=RequestContext(request)
         )
+
 
 # *****************************************************************************
 # *****************************************************************************
