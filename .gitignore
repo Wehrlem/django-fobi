@@ -11,8 +11,11 @@ ghostdriver.log
 /dev.db
 /.cache/
 /htmlcov/
+/third_party/
 *.py,cover
 /.idea/
+codebin.py
+examples/mezzanine_example/dev.db
 
 MANIFEST.in~
 MIND_BUCKET.rst
@@ -50,6 +53,7 @@ README_PARTS.rst
 /examples/media/cache/
 /examples/simple/lund_urls.py
 /examples/simple/lund/
+/examples/saved_forms_in_json_format/all/
 /examples/simple/settings/local_settings.py
 /examples/simple/settings/local_settings_foundation5.py
 /examples/simple/settings/bootstrap3_theme_django_1_9_lund.py
@@ -61,5 +65,10 @@ README_PARTS.rst
 /examples/quickstart/
 /examples/static/
 /examples/requirements/wagtail.txt
-/examples/wagtaildemo/
+#/examples/wagtaildemo/
 /examples/wagtail_example_/
+/examples/wagtaildemo/.vagrant
+/examples/wagtaildemo/wagtaildemo/settings/local.py
+/examples/wagtaildemo/static
+/examples/wagtaildemo/media
+/examples/wagtaildemo/Vagrantfile.local

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from collections import OrderedDict
 from uuid import uuid4
 
 from django.conf import settings
@@ -56,9 +57,22 @@ class ContentImagePlugin(FormElementPlugin):
         )
         return self.get_cloned_plugin_data(update={'file': cloned_image})
 
-    def get_form_field_instances(self, request=None, form_entry=None,
-                                 form_element_entries=None, **kwargs):
-        """Get form field instances."""
+    def get_raw_data(self):
+        """Get raw data.
+
+        Might be used in integration plugins.
+        """
+        return OrderedDict(
+            (
+                ('file', "{}{}".format(settings.MEDIA_URL, self.data.file)),
+                ('alt', self.data.alt),
+                ('fit_method', self.data.fit_method),
+                ('size', self.data.size),
+            )
+        )
+
+    def get_rendered_image(self):
+        """Get rendered image."""
         width, height = self.data.size.split('x')
         crop = get_crop_filter(self.data.fit_method)
 
@@ -76,9 +90,13 @@ class ContentImagePlugin(FormElementPlugin):
             'thumb_size': thumb_size
         }
         rendered_image = render_to_string('content_image/render.html', context)
+        return rendered_image
 
+    def get_form_field_instances(self, request=None, form_entry=None,
+                                 form_element_entries=None, **kwargs):
+        """Get form field instances."""
         field_kwargs = {
-            'initial': rendered_image,
+            'initial': self.get_rendered_image(),
             'required': False,
             'label': '',
         }

@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 import simplejson as json
 
-from six import string_types
+# from six import string_types
 
 from django.db import models, IntegrityError
 from django.contrib import messages
@@ -82,7 +82,10 @@ from .utils import (
     perform_form_entry_import,
     prepare_form_entry_export_data
 )
-from .wizard import DynamicSessionWizardView, DynamicCookieWizardView
+from .wizard import (
+    # DynamicCookieWizardView,
+    DynamicSessionWizardView,
+)
 
 if versions.DJANGO_GTE_1_10:
     from django.shortcuts import render
@@ -485,14 +488,18 @@ def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
                     )
                 )
                 return redirect(
-                    reverse('fobi.edit_form_entry',
-                            kwargs={'form_entry_id': form_entry_id})
+
+                    reverse(
+                        'fobi.edit_form_entry',
+                        kwargs={'form_entry_id': form_entry_id}
+                    )
                 )
             except IntegrityError as err:
                 messages.info(
                     request,
-                    ugettext('Errors occurred while saving '
-                             'the form: {0}.').format(str(err))
+                    ugettext(
+                        'Errors occurred while saving the form: {0}.'
+                    ).format(str(err))
                 )
     else:
         # The form entry form (does not contain form elements)
@@ -1518,6 +1525,11 @@ class FormWizardView(DynamicSessionWizardView):
         wasn't successful), the next step (if the current step was stored
         successful) or the done view (if no more steps are available)
         """
+        # Without this fix POST actions breaks on Django 1.11. Introduce
+        # a better fix if you can.
+        if versions.DJANGO_GTE_1_11:
+            self.request.POST._mutable = True
+
         # Look for a wizard_goto_step element in the posted data which
         # contains a valid step name. If one was found, render the requested
         # form. (This makes stepping back a lot easier).
@@ -1569,8 +1581,10 @@ class FormWizardView(DynamicSessionWizardView):
                     field_key
                 )
                 # Do not overwrite field data. Only empty or missing values.
-                if not (wizard_form_key in form.data
-                        and form.data[wizard_form_key]):
+                if not (
+                    wizard_form_key in form.data
+                    and form.data[wizard_form_key]
+                ):
                     form.data[wizard_form_key] = field_value
 
                 # This is dirty hack to make wizard validate empty multiple
@@ -1855,7 +1869,7 @@ def delete_form_wizard_form_entry(request, form_wizard_form_entry_id):
     """
     try:
         obj = FormWizardFormEntry \
-            ._default_manager \
+            .objects \
             .select_related('form_wizard_entry') \
             .get(pk=form_wizard_form_entry_id,
                  form_wizard_entry__user__pk=request.user.pk)

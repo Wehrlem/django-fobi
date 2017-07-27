@@ -4,7 +4,7 @@ import sys
 from distutils.version import LooseVersion
 from setuptools import setup, find_packages
 
-version = '0.10.7'
+version = '0.12'
 
 # ***************************************************************************
 # ************************** Python version *********************************
@@ -122,9 +122,17 @@ template_dirs = [
     "src/fobi/contrib/apps/mezzanine_integration/templates/"
     "mezzanine_integration",
 
+    # Wagtail integration
+    "src/fobi/contrib/apps/wagtail_integration/templates/"
+    "wagtail_integration",
+
     # Content image
     "src/fobi/contrib/plugins/form_elements/content/content_image/"
     "templates/content_image",
+
+    # Content image URL
+    "src/fobi/contrib/plugins/form_elements/content/content_image_url/"
+    "templates/content_image_url",
 
     # DB Store
     "src/fobi/contrib/plugins/form_handlers/db_store/templates/db_store",
@@ -219,7 +227,7 @@ if DJANGO_INSTALLED:
         install_requires = [
             'django-autoslug==1.7.1',
             # 'django-formtools>=1.0',
-            'django-nine>=0.1.10',
+            'django-nine>=0.1.13',
             'django-nonefield>=0.1',
             # 'ordereddict>=1.1',
             'Pillow>=2.0.0',
@@ -233,7 +241,7 @@ if DJANGO_INSTALLED:
         install_requires = [
             'django-autoslug==1.7.1',
             'django-formtools>=1.0',
-            'django-nine>=0.1.10',
+            'django-nine>=0.1.13',
             'django-nonefield>=0.1',
             # 'ordereddict>=1.1',
             'Pillow>=2.0.0',
@@ -246,7 +254,7 @@ if DJANGO_INSTALLED:
         install_requires = [
             'django-autoslug==1.9.3',
             'django-formtools>=1.0',
-            'django-nine>=0.1.10',
+            'django-nine>=0.1.13',
             'django-nonefield>=0.1',
             # 'ordereddict>=1.1',
             'Pillow>=2.0.0',
@@ -259,7 +267,7 @@ if DJANGO_INSTALLED:
         install_requires = [
             'django-autoslug==1.9.3',
             'django-formtools>=1.0',
-            'django-nine>=0.1.10',
+            'django-nine>=0.1.13',
             'django-nonefield>=0.1',
             # 'ordereddict>=1.1',
             'Pillow>=2.0.0',
@@ -272,7 +280,7 @@ if DJANGO_INSTALLED:
         install_requires = [
             'django-autoslug==1.9.3',
             'django-formtools',
-            'django-nine>=0.1.10',
+            'django-nine>=0.1.13',
             'django-nonefield>=0.1',
             # 'ordereddict>=1.1',
             'Pillow>=2.0.0',
@@ -291,7 +299,7 @@ if not install_requires:
     install_requires = [
         'django-autoslug>=1.9.3',
         'django-formtools>=1.0',
-        'django-nine>=0.1.10',
+        'django-nine>=0.1.13',
         'django-nonefield>=0.1',
         # 'ordereddict>=1.1',
         'Pillow>=2.0.0',
@@ -305,6 +313,7 @@ if not install_requires:
 
 tests_require = [
     'selenium',
+    'Faker',
     # 'factory_boy',
     # 'fake-factory',
     # 'Pillow',
@@ -316,27 +325,27 @@ tests_require = [
 
 if PY3:
     install_requires.append('simplejson>=3.0.0')  # When using Python 3
-    if not DJANGO_1_11:
+    if DJANGO_INSTALLED and not DJANGO_1_11:
         install_requires.append('easy-thumbnails>=2.3')
     else:
-        install_requires.append('easy-thumbnails')
-        dependency_links.append(
-            'https://github.com/SmileyChris/easy-thumbnails/archive/'
-            'master.tar.gz'
-            '#egg=easy-thumbnails'
-        )
+        install_requires.append('easy-thumbnails>=2.4.1')
+        # dependency_links.append(
+        #     'https://github.com/SmileyChris/easy-thumbnails/archive/'
+        #     'master.tar.gz'
+        #     '#egg=easy-thumbnails'
+        # )
 else:
     install_requires.append('simplejson>=2.1.0')  # When using Python 2.*
     install_requires.append('ordereddict>=1.1')
-    if not DJANGO_1_11:
+    if DJANGO_INSTALLED and not DJANGO_1_11:
         install_requires.append('easy-thumbnails>=1.4')
     else:
-        install_requires.append('easy-thumbnails')
-        dependency_links.append(
-            'https://github.com/SmileyChris/easy-thumbnails/archive/'
-            'master.tar.gz'
-            '#egg=easy-thumbnails'
-        )
+        install_requires.append('easy-thumbnails>=2.4.1')
+        # dependency_links.append(
+        #     'https://github.com/SmileyChris/easy-thumbnails/archive/'
+        #     'master.tar.gz'
+        #     '#egg=easy-thumbnails'
+        # )
 
 setup(
     name='django-fobi',
