@@ -159,7 +159,8 @@ def _delete_plugin_entry(request,
     """
     try:
         obj = entry_model_cls._default_manager \
-            .select_related('form_entry') 
+            .select_related('form_entry') \
+            .get(pk=entry_id)
     except ObjectDoesNotExist as e:
         raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
 
@@ -198,8 +199,7 @@ def _delete_wizard_plugin_entry(request,
     try:
         obj = entry_model_cls._default_manager \
             .select_related('form_wizard_entry') \
-            .get(pk=entry_id,
-                 form_wizard_entry__user__pk=request.user.pk)
+            .get(pk=entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(
             ugettext("{0} not found.").format(
