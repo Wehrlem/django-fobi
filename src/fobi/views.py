@@ -148,7 +148,6 @@ def _delete_plugin_entry(request,
                          message,
                          html_anchor):
     """Abstract delete entry.
-
     :param django.http.HttpRequest request:
     :param int entry_id:
     :param fobi.models.AbstractPluginEntry entry_model_cls: Subclass of
@@ -159,26 +158,29 @@ def _delete_plugin_entry(request,
     """
     try:
         obj = entry_model_cls._default_manager \
-            .select_related('form_entry') \
-            .get(pk=entry_id)
-    except ObjectDoesNotExist as e:
-        raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
-
-
-        form_entry = obj.form_entry
-        plugin = obj.get_plugin(request=request)
-        plugin.request = request
-
-        plugin._delete_plugin_data()
-
-        obj.delete()
-
-        messages.info(request, message.format(plugin.name))
-
-        redirect_url = reverse(
-            'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+                             .select_related('form_entry') \
+                             .get(pk=entry_id)
+    except ObjectDoesNotExist as err:
+        raise Http404(
+            ugettext("{0} not found.").format(
+                entry_model_cls._meta.verbose_name
+            )
         )
-        return redirect("{0}{1}".format(redirect_url, html_anchor))
+
+    form_entry = obj.form_entry
+    plugin = obj.get_plugin(request=request)
+    plugin.request = request
+
+    plugin._delete_plugin_data()
+
+    obj.delete()
+
+    messages.info(request, message.format(plugin.name))
+
+    redirect_url = reverse(
+        'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+    )
+    return redirect("{0}{1}".format(redirect_url, html_anchor))
 
 
 def _delete_wizard_plugin_entry(request,
