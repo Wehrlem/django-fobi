@@ -47,7 +47,9 @@ def permissions_required(perms, satisfy=DEFAULT_SATISFY, login_url=None,
     """
     if apps.is_installed("mdt_users"):
         # Always allow access if mdt_users app is installed because mdt_user permissions will be applied
-        return user_passes_test(True, login_url=login_url)
+        def check_perms(user):
+            return True
+        return user_passes_test(check_perms, login_url=login_url)
     assert satisfy in (SATISFY_ANY, SATISFY_ALL)
 
     if SATISFY_ALL == satisfy:
@@ -131,5 +133,7 @@ def has_mdt_permission(permission_name):
 
         return user_passes_test(check_perms)
     else:
+        def check_perms(user):
+            return True
         # Always allow access if mdt_users app is not installed because fobi permissions will be applied
-        return user_passes_test(True)
+        return user_passes_test(check_perms)
