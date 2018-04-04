@@ -12,7 +12,7 @@ import simplejson as json
 
 from django.db import models, IntegrityError
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.forms import ValidationError
@@ -42,7 +42,7 @@ from .constants import (
     CALLBACK_FORM_VALID_AFTER_FORM_HANDLERS,
     CALLBACK_FORM_INVALID
 )
-from .decorators import permissions_required, SATISFY_ALL, SATISFY_ANY
+from .decorators import has_mdt_permission, permissions_required, SATISFY_ALL, SATISFY_ANY
 from .dynamic import assemble_form_class
 from .form_importers import (
     ensure_autodiscover as ensure_importers_autodiscover,
@@ -148,7 +148,6 @@ def _delete_plugin_entry(request,
                          message,
                          html_anchor):
     """Abstract delete entry.
-
     :param django.http.HttpRequest request:
     :param int entry_id:
     :param fobi.models.AbstractPluginEntry entry_model_cls: Subclass of
@@ -159,25 +158,29 @@ def _delete_plugin_entry(request,
     """
     try:
         obj = entry_model_cls._default_manager \
-            .select_related('form_entry') 
-    except ObjectDoesNotExist as e:
-        raise Http404(_("{0} not found.").format(EntryModel._meta.verbose_name))
-
-
-        form_entry = obj.form_entry
-        plugin = obj.get_plugin(request=request)
-        plugin.request = request
-
-        plugin._delete_plugin_data()
-
-        obj.delete()
-
-        messages.info(request, message.format(plugin.name))
-
-        redirect_url = reverse(
-            'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+                             .select_related('form_entry') \
+                             .get(pk=entry_id)
+    except ObjectDoesNotExist as err:
+        raise Http404(
+            ugettext("{0} not found.").format(
+                entry_model_cls._meta.verbose_name
+            )
         )
-        return redirect("{0}{1}".format(redirect_url, html_anchor))
+
+    form_entry = obj.form_entry
+    plugin = obj.get_plugin(request=request)
+    plugin.request = request
+
+    plugin._delete_plugin_data()
+
+    obj.delete()
+
+    messages.info(request, message.format(plugin.name))
+
+    redirect_url = reverse(
+        'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+    )
+    return redirect("{0}{1}".format(redirect_url, html_anchor))
 
 
 def _delete_wizard_plugin_entry(request,
@@ -198,8 +201,7 @@ def _delete_wizard_plugin_entry(request,
     try:
         obj = entry_model_cls._default_manager \
             .select_related('form_wizard_entry') \
-            .get(pk=entry_id,
-                 form_wizard_entry__user__pk=request.user.pk)
+            .get(pk=entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(
             ugettext("{0} not found.").format(
@@ -244,6 +246,7 @@ dashboard_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_read')
 @permissions_required(satisfy=SATISFY_ANY, perms=dashboard_permissions)
 def dashboard(request, theme=None, template_name=None):
     """Dashboard.
@@ -291,6 +294,7 @@ wizards_dashboard_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_read')
 @permissions_required(satisfy=SATISFY_ANY, perms=wizards_dashboard_permissions)
 def form_wizards_dashboard(request, theme=None, template_name=None):
     """Dashboard for form wizards.
@@ -301,7 +305,6 @@ def form_wizards_dashboard(request, theme=None, template_name=None):
     :return django.http.HttpResponse:
     """
     form_wizard_entries = FormWizardEntry._default_manager \
-        .filter(user__pk=request.user.pk) \
         .select_related('user')
 
     context = {
@@ -344,6 +347,7 @@ create_form_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL, perms=create_form_entry_permissions)
 def create_form_entry(request, theme=None, template_name=None):
     """Create form entry.
@@ -412,6 +416,7 @@ edit_form_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ANY, perms=edit_form_entry_permissions)
 def edit_form_entry(request, form_entry_id, theme=None, template_name=None):
     """Edit form entry.
@@ -595,6 +600,7 @@ delete_form_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL,
                       perms=delete_form_entry_permissions)
 def delete_form_entry(request, form_entry_id, template_name=None):
@@ -607,7 +613,7 @@ def delete_form_entry(request, form_entry_id, template_name=None):
     """
     try:
         obj = FormEntry._default_manager \
-            .get(pk=form_entry_id, user__pk=request.user.pk)
+            .get(pk=form_entry_id)
     except ObjectDoesNotExist as err:
         raise Http404(ugettext("Form entry not found."))
 
@@ -627,7 +633,8 @@ def delete_form_entry(request, form_entry_id, template_name=None):
 
 
 @login_required
-@permission_required('fobi.add_formelemententry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.add_formelemententry'])
 def add_form_element_entry(request,
                            form_entry_id,
                            form_element_plugin_uid,
@@ -759,7 +766,8 @@ def add_form_element_entry(request,
 
 
 @login_required
-@permission_required('fobi.change_formelemententry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.change_formelemententry'])
 def edit_form_element_entry(request,
                             form_element_entry_id,
                             theme=None,
@@ -864,7 +872,8 @@ def edit_form_element_entry(request,
 
 
 @login_required
-@permission_required('fobi.delete_formelemententry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.delete_formelemententry'])
 def delete_form_element_entry(request, form_element_entry_id):
     """Delete form element entry.
 
@@ -890,7 +899,8 @@ def delete_form_element_entry(request, form_element_entry_id):
 
 
 @login_required
-@permission_required('fobi.add_formhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.add_formhandlerentry'])
 def add_form_handler_entry(request,
                            form_entry_id,
                            form_handler_plugin_uid,
@@ -1017,7 +1027,8 @@ def add_form_handler_entry(request,
 
 
 @login_required
-@permission_required('fobi.change_formhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.change_formhandlerentry'])
 def edit_form_handler_entry(request,
                             form_handler_entry_id,
                             theme=None,
@@ -1111,7 +1122,8 @@ def edit_form_handler_entry(request,
 
 
 @login_required
-@permission_required('fobi.delete_formhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.delete_formhandlerentry'])
 def delete_form_handler_entry(request, form_handler_entry_id):
     """Delete form handler entry.
 
@@ -1149,6 +1161,7 @@ create_form_wizard_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL,
                       perms=create_form_wizard_entry_permissions)
 def create_form_wizard_entry(request, theme=None, template_name=None):
@@ -1224,6 +1237,7 @@ edit_form_wizard_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ANY,
                       perms=edit_form_wizard_entry_permissions)
 def edit_form_wizard_entry(request, form_wizard_entry_id, theme=None,
@@ -1393,6 +1407,7 @@ delete_form_wizard_entry_permissions = [
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL,
                       perms=delete_form_wizard_entry_permissions)
 def delete_form_wizard_entry(request, form_wizard_entry_id,
@@ -1762,7 +1777,8 @@ def form_wizard_entry_submitted(request, form_wizard_entry_slug=None,
 
 
 @login_required
-@permission_required('fobi.add_formwizardformentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.add_formwizardformentry'])
 def add_form_wizard_form_entry(request,
                                form_wizard_entry_id,
                                form_entry_id,
@@ -1859,7 +1875,8 @@ def add_form_wizard_form_entry(request,
 
 
 @login_required
-@permission_required('fobi.delete_formwizardformentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.delete_formwizardformentry'])
 def delete_form_wizard_form_entry(request, form_wizard_form_entry_id):
     """Delete form wizard form entry.
 
@@ -1911,7 +1928,8 @@ def delete_form_wizard_form_entry(request, form_wizard_form_entry_id):
 
 
 @login_required
-@permission_required('fobi.add_formwizardhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.add_formwizardhandlerentry'])
 def add_form_wizard_handler_entry(request,
                                   form_wizard_entry_id,
                                   form_wizard_handler_plugin_uid,
@@ -2046,7 +2064,8 @@ def add_form_wizard_handler_entry(request,
 
 
 @login_required
-@permission_required('fobi.change_formwizardhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.change_formwizardhandlerentry'])
 def edit_form_wizard_handler_entry(request,
                                    form_wizard_handler_entry_id,
                                    theme=None,
@@ -2147,7 +2166,8 @@ def edit_form_wizard_handler_entry(request,
 
 
 @login_required
-@permission_required('fobi.delete_formwizardhandlerentry')
+@has_mdt_permission('admin_write')
+@permissions_required(satisfy=SATISFY_ALL, perms=['fobi.delete_formwizardhandlerentry'])
 def delete_form_wizard_handler_entry(request, form_wizard_handler_entry_id):
     """Delete form handler entry.
 
@@ -2366,6 +2386,7 @@ def form_entry_submitted(request, form_entry_slug=None, template_name=None):
 
 
 @login_required
+@has_mdt_permission('admin_read')
 @permissions_required(satisfy=SATISFY_ALL, perms=create_form_entry_permissions)
 def export_form_entry(request, form_entry_id, template_name=None):
     """Export form entry to JSON.
@@ -2430,6 +2451,7 @@ def export_form_entry(request, form_entry_id, template_name=None):
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL, perms=create_form_entry_permissions)
 def import_form_entry(request, template_name=None):
     """Import form entry.
@@ -2574,6 +2596,7 @@ def import_form_entry(request, template_name=None):
 
 
 @login_required
+@has_mdt_permission('admin_read')
 @permissions_required(satisfy=SATISFY_ALL,
                       perms=create_form_wizard_entry_permissions)
 def export_form_wizard_entry(request,
@@ -2635,6 +2658,7 @@ def export_form_wizard_entry(request,
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL,
                       perms=create_form_wizard_entry_permissions)
 def import_form_wizard_entry(request, template_name=None):
@@ -2781,6 +2805,7 @@ def import_form_wizard_entry(request, template_name=None):
 
 
 @login_required
+@has_mdt_permission('admin_write')
 @permissions_required(satisfy=SATISFY_ALL, perms=create_form_entry_permissions)
 def form_importer(request,
                   form_importer_plugin_uid,

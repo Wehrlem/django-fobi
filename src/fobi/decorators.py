@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import user_passes_test
 
@@ -44,6 +45,11 @@ def permissions_required(perms, satisfy=DEFAULT_SATISFY, login_url=None,
     >>> def edit_dashboard(request):
     >>>     # your code
     """
+    if apps.is_installed("mdt_users"):
+        # Always allow access if mdt_users app is installed because mdt_user permissions will be applied
+        def check_perms(user):
+            return True
+        return user_passes_test(check_perms, login_url=login_url)
     assert satisfy in (SATISFY_ANY, SATISFY_ALL)
 
     if SATISFY_ALL == satisfy:
@@ -114,3 +120,20 @@ def any_permission_required(perms, login_url=None, raise_exception=False):
     return permissions_required(perms, satisfy=SATISFY_ANY,
                                 login_url=login_url,
                                 raise_exception=raise_exception)
+
+                                
+def has_mdt_permission(permission_name):
+    """Check for the permissions given by mdt_users application."""
+    if apps.is_installed("mdt_users"):
+        from mdt_users.verifications import has_permission
+        def check_perms(user):
+            if not has_permission(user, permission_name):
+                raise PermissionDenied
+            return True
+
+        return user_passes_test(check_perms)
+    else:
+        def check_perms(user):
+            return True
+        # Always allow access if mdt_users app is not installed because fobi permissions will be applied
+        return user_passes_test(check_perms)
