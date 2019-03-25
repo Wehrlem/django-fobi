@@ -6,7 +6,7 @@ from fobi.helpers import validate_initial_for_multiple_choices
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.select_multiple.forms'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('SelectMultipleInputForm',)
 
@@ -41,7 +41,7 @@ class SelectMultipleInputForm(forms.Form, BaseFormFieldPluginForm):
     )
     choices = forms.CharField(
         label=_("Choices"),
-        required=False,
+        required=True,
         help_text=_("Enter single values/pairs per line. Example:<code><br/>"
                     "&nbsp;&nbsp;&nbsp;&nbsp;1<br/>"
                     "&nbsp;&nbsp;&nbsp;&nbsp;2<br/>"

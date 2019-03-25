@@ -20,11 +20,11 @@ except ImportError:
 
 __title__ = 'fobi.widgets'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
-    'NumberInput',
     'BooleanRadioSelect',
+    'NumberInput',
     'RichSelect',
     'RichSelectInverseQuotes',
 )
@@ -83,7 +83,7 @@ class RichSelect(Select):
             else None
         super(RichSelect, self).__init__(attrs=attrs, choices=choices)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, **kwargs):
         """Renders the element, having prepended and appended extra parts."""
         if self.override_name is not None:
             name = self.override_name
@@ -91,7 +91,8 @@ class RichSelect(Select):
         rendered_select = super(RichSelect, self).render(
             name=name,
             value=value,
-            attrs=attrs
+            attrs=attrs,
+            **kwargs
         )
 
         return mark_safe(
@@ -108,14 +109,32 @@ class RichSelectInverseQuotes(RichSelect):
 
     Uses inverse quotes.
     """
-    if versions.DJANGO_GTE_1_10:
-        def render(self, name, value, attrs=None):
+    if versions.DJANGO_GTE_1_11:
+        template_name = 'fobi/django/forms/widgets/rich_select_inverse.html'
+        option_template_name = 'fobi/django/forms/widgets/' \
+                               'rich_select_inverse_option.html'
+
+    elif versions.DJANGO_GTE_1_10:
+        def render(self, name, value, attrs=None, **kwargs):
             if self.override_name is not None:
                 name = self.override_name
 
             if value is None:
                 value = ''
-            final_attrs = self.build_attrs(attrs, name=name)
+
+            if not attrs:
+                attrs = self.attrs
+            else:
+                attrs.update(self.attrs)
+
+            if versions.DJANGO_GTE_1_11:
+                final_attrs = self.build_attrs(
+                    attrs,
+                    extra_attrs={'name': name}
+                )
+            else:
+                final_attrs = self.build_attrs(attrs, name=name)
+
             output = [
                 format_html('<select{}>', flatatt_inverse_quotes(final_attrs))
             ]
@@ -132,6 +151,7 @@ class RichSelectInverseQuotes(RichSelect):
                     format_html(self.append_html)
                 ])
             )
+
     else:
         def render(self, name, value, attrs=None, choices=()):
             if self.override_name is not None:
@@ -139,7 +159,20 @@ class RichSelectInverseQuotes(RichSelect):
 
             if value is None:
                 value = ''
-            final_attrs = self.build_attrs(attrs, name=name)
+
+            if not attrs:
+                attrs = self.attrs
+            else:
+                attrs.update(self.attrs)
+
+            if versions.DJANGO_GTE_1_11:
+                final_attrs = self.build_attrs(
+                    attrs,
+                    extra_attrs={'name': name}
+                )
+            else:
+                final_attrs = self.build_attrs(attrs, name=name)
+
             output = [
                 format_html('<select{}>', flatatt_inverse_quotes(final_attrs))
             ]

@@ -12,6 +12,8 @@ syntax: regexp
 ^htmlcov/
 \.py,cover
 \.idea/
+\.pytest_cache/
+\geckodriver\.log
 
 ^MANIFEST\.in~
 ^tmp/
@@ -31,6 +33,7 @@ syntax: regexp
 ^examples/media/fobi_plugins/content_image/
 ^examples/media/fobi_plugins/file/
 ^examples/static/
+^examples/_static/
 ^examples/simple/settings/local_settings\.py
 ^examples/simple/settings/local_settings_foundation5\.py
 ^examples/mezzanine_example/static/media/fobi_plugins/

@@ -11,7 +11,7 @@ from .forms import RegexInputForm
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.regex.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('RegexInputPlugin',)
 
@@ -43,7 +43,7 @@ class RegexInputPlugin(FormFieldPlugin):
             'widget': TextInput(attrs=widget_attrs),
         }
 
-        if self.data.max_length:
+        if self.data.max_length is not None:
             field_kwargs['max_length'] = self.data.max_length
 
         return [(self.data.name, RegexField, field_kwargs)]

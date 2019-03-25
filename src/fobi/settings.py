@@ -21,7 +21,7 @@ from .exceptions import NoDefaultThemeSet
 
 __title__ = 'fobi.settings'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'CUSTOM_THEME_DATA',
@@ -42,6 +42,7 @@ __all__ = (
     'FORM_ELEMENT_PLUGINS_MODULE_NAME',
     'FORM_HANDLER_PLUGINS_EXECUTION_ORDER',
     'FORM_HANDLER_PLUGINS_MODULE_NAME',
+    'SORT_PLUGINS_BY_VALUE',
     'FORM_IMPORTER_PLUGINS_MODULE_NAME',
     'FORM_WIZARD_HANDLER_PLUGINS_EXECUTION_ORDER',
     'GET_PARAM_INITIAL_DATA',
@@ -110,6 +111,7 @@ THEME_FOOTER_TEXT = get_setting('THEME_FOOTER_TEXT')
 
 DEFAULT_MIN_LENGTH = get_setting('DEFAULT_MIN_LENGTH')
 DEFAULT_MAX_LENGTH = get_setting('DEFAULT_MAX_LENGTH')
+SORT_PLUGINS_BY_VALUE = get_setting('SORT_PLUGINS_BY_VALUE')
 
 FORM_HANDLER_PLUGINS_EXECUTION_ORDER = \
     get_setting('FORM_HANDLER_PLUGINS_EXECUTION_ORDER')

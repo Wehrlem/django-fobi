@@ -37,20 +37,20 @@ $(function() {
 
     formElementPositionElements = $('.form-element-position');
     if (formElementPositionElements.length) {
-        $('.form-horizontal .row').css({ 'cursor': 'move' });
+        $('#fobi-form .row, #fobi-form .form-group').css({ 'cursor': 'move' });
 
-        $('.form-horizontal').sortable({
+        $('#fobi-form').sortable({
             axis: 'y',
-            items: ".row",
+            items: ".row, .form-group",
             update: function(){
-                $.each($('.form-horizontal .row'), function(i){
+                $.each($('#fobi-form .row, #fobi-form .form-group'), function(i){
                     $(this).find('input:regex(name, .*-position)').val(i + 1);
                 });
 
-                $(this).find('.row').removeClass('row1').removeClass('row2');
+                $(this).find('.row, .form-group').removeClass('row1').removeClass('row2');
 
-                $(this).find('.row:odd').addClass('row2');
-                $(this).find('.row:even').addClass('row1');
+                $(this).find('.row:odd, .form-group:odd').addClass('row2');
+                $(this).find('.row:even, .form-group:even').addClass('row1');
             }
         });
     }

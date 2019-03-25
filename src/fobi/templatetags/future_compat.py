@@ -1,6 +1,6 @@
 __title__ = 'fobi.templatetags.future_compat'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('firstof',)
 
@@ -8,7 +8,11 @@ try:
     # We're using the Django 1.6 admin templates, that make use of new
     # things. One of the new additions (changed) was the ``firstof``
     # template tag. If we can't import it, we simply define it ourselves.
-    from django.template.deafulttags import firstof
+    from django.template import Library
+    from django.template.defaulttags import firstof
+
+    register = Library()
+    register.tag('firstof', firstof)
 except ImportError:
     import warnings
 

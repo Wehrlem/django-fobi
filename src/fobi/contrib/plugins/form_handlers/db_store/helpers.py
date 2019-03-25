@@ -1,12 +1,11 @@
 import csv
+import logging
+
+from django.http import HttpResponse
 
 import simplejson as json
 
 from six import StringIO, BytesIO, text_type
-
-from django.http import HttpResponse
-
-from nine.versions import DJANGO_GTE_1_7
 
 from .....exceptions import ImproperlyConfigured
 from .....helpers import safe_text
@@ -22,9 +21,12 @@ except ImportError:
 
 __title__ = 'fobi.contrib.plugins.form_handlers.db_store.helpers'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('DataExporter',)
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class DataExporter(object):
@@ -40,11 +42,12 @@ class DataExporter(object):
 
         For compatibility with older versions (`mimetype` vs `content_type`).
         """
-        response_kwargs = {}
-        if DJANGO_GTE_1_7:
-            response_kwargs['content_type'] = mimetype
-        else:
-            response_kwargs['mimetype'] = mimetype
+        response_kwargs = {'content_type': mimetype}
+        # response_kwargs = {}
+        # if DJANGO_GTE_1_7:
+        #     response_kwargs['content_type'] = mimetype
+        # else:
+        #     response_kwargs['mimetype'] = mimetype
         return HttpResponse(**response_kwargs)
 
     def _get_data_headers(self):
@@ -58,7 +61,7 @@ class DataExporter(object):
         # Normal RDMBs
         try:
             qs = self.queryset.only(*only_args)
-            qs = qs.distinct('form_data_headers')
+            qs = qs.distinct('form_data_headers').order_by('form_data_headers')
             qs = [obj.form_data_headers for obj in qs]
 
         # Engines like SQLite

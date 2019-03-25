@@ -21,8 +21,8 @@
     {% block theme-stylesheets %}
     {#<!-- This is where stylesheets declared in the Python theme are listed -->#}
 
-    {% for css_file in fobi_theme.get_media_css %}
-    <link href="{% static css_file %}" rel="stylesheet" media="all" />
+    {% for css in fobi_theme.get_media_css %}
+    <link href="{{ css }}" rel="stylesheet" media="all" />
     {% endfor %}
 
     {% endblock theme-stylesheets %}
@@ -61,8 +61,7 @@
             <span class="icon-bar"></span>
           </button>
           {% block dashboard-menu-item %}
-          {% url 'fobi.dashboard' as fobi_dashboard_url %}
-          <a class="navbar-brand" href="{{ fobi_dashboard_url }}">{{ fobi_theme.project_name }}</a>
+          <a class="navbar-brand" href="{% url 'fobi.dashboard' %}">{{ fobi_theme.project_name }}</a>
           {% endblock dashboard-menu-item %}
         </div>
         {% endblock navbar-header %}
@@ -136,7 +135,7 @@
 
           {% block content-wrapper %}
           <div class="row">
-            <div class="{% block content-class %}col-18 col-sm-18 col-lg-12{% endblock content-class %}">
+            <div class="{% block content-class %}col-lg-12{% endblock content-class %}">
             {% block content %}
               <!--
               <h2>Heading</h2>
@@ -189,7 +188,6 @@
     </div><!--/.container-->
     {% endblock main-content-wrapper %}
 
-
   {% endblock main-wrapper %}
 
   {% block javascripts %}
@@ -199,11 +197,10 @@
 
   {% block theme-javascripts %}
     {#<!-- This is where javascripts declared in the Python theme are listed -->#}
-    {% for js_file in fobi_theme.get_media_js %}
-    <script src="{% static js_file %}"></script>
+    {% for js in fobi_theme.get_media_js %}
+    <script src="{{ js }}"></script>
     {% endfor %}
-
   {% endblock theme-javascripts %}
-    
+
   </body>
 </html>

@@ -11,7 +11,7 @@ from .forms import FloatInputForm
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.float.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('FloatInputPlugin',)
 
@@ -42,12 +42,12 @@ class FloatInputPlugin(FormFieldPlugin):
             'required': self.data.required,
         }
 
-        if self.data.max_value:
+        if self.data.max_value is not None:
             data_max_value = float(self.data.max_value)
             field_kwargs['max_value'] = data_max_value
             widget_attrs['max'] = data_max_value
 
-        if self.data.min_value:
+        if self.data.min_value is not None:
             data_min_value = float(self.data.min_value)
             field_kwargs['min_value'] = data_min_value
             widget_attrs['min'] = data_min_value

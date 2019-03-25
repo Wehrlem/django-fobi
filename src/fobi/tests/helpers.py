@@ -31,20 +31,20 @@ from fobi.contrib.plugins.form_handlers \
 from fobi.contrib.plugins.form_handlers \
          .mail.fobi_form_handlers import MailHandlerPlugin
 
-from .base import (
-    is_fobi_setup_completed,
-    mark_fobi_setup_as_completed,
+from .core import (
+    is_app_setup_completed,
+    mark_app_setup_as_completed,
 )
 from .constants import (
     FOBI_TEST_USER_USERNAME,
     FOBI_TEST_USER_PASSWORD,
     TEST_FORM_NAME,
-    TEST_FORM_SLUG
+    TEST_FORM_SLUG,
 )
 
 __title__ = 'fobi.tests.helpers'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'create_form_with_entries',
@@ -52,6 +52,7 @@ __all__ = (
     'get_or_create_admin_user',
     'get_or_create_admin_user',
     'phantom_js_clean_up',
+    'setup_app',
 )
 
 # ****************************************************************************
@@ -93,9 +94,9 @@ def get_or_create_admin_user():
             pass
 
 
-def setup_fobi(collectstatic=False, fobi_sync_plugins=False):
+def setup_app(collectstatic=False, fobi_sync_plugins=False):
     """Set up fobi."""
-    if is_fobi_setup_completed():
+    if is_app_setup_completed():
         return False
 
     if collectstatic:
@@ -104,7 +105,7 @@ def setup_fobi(collectstatic=False, fobi_sync_plugins=False):
         call_command('fobi_sync_plugins', verbosity=3, interactive=False)
     # call_command('loaddata', 'dash', verbosity=3, interactive=False)
 
-    mark_fobi_setup_as_completed()
+    mark_app_setup_as_completed()
 
 
 def create_form_with_entries(user=None,
@@ -187,14 +188,18 @@ def create_form_with_entries(user=None,
     return form_entry
 
 
-def db_clean_up():
+def db_clean_up(clean_form=False, clean_elements=True, clean_handlers=True):
     """Clean up the database.
 
     Clean up the database by removing all form element and form handler
     entries.
     """
-    FormElementEntry._default_manager.all().delete()
-    FormHandlerEntry._default_manager.all().delete()
+    if clean_form:
+        FormEntry._default_manager.all().delete()
+    if clean_elements:
+        FormElementEntry._default_manager.all().delete()
+    if clean_handlers:
+        FormHandlerEntry._default_manager.all().delete()
 
 
 def phantom_js_clean_up():

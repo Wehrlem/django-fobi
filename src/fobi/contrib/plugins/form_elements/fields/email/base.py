@@ -12,7 +12,7 @@ from .forms import EmailInputForm
 __title__ = 'fobi.contrib.plugins.form_elements.fields.' \
             'email.fobi_form_elements'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('EmailInputPlugin',)
 
@@ -43,8 +43,16 @@ class EmailInputPlugin(FormFieldPlugin):
             'required': self.data.required,
             'widget': TextInput(attrs=widget_attrs),
         }
+
         if self.data.max_length:
-            field_kwargs['max_length'] = self.data.max_length
+            try:
+                field_kwargs['max_length'] = int(self.data.max_length)
+            except ValueError:
+                field_kwargs['max_length'] = None
+        else:
+            field_kwargs['max_length'] = None
+
+        field_kwargs['min_length'] = None
 
         return [(self.data.name, EmailField, field_kwargs)]
 

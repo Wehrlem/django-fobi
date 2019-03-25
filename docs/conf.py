@@ -20,10 +20,11 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.insert(0, os.path.abspath('../examples'))
+sys.path.insert(0, os.path.abspath('../examples/simple'))
 
-from nine.versions import DJANGO_LTE_1_7, DJANGO_GTE_1_8, DJANGO_GTE_1_7
+from nine.versions import DJANGO_GTE_1_8
 
-if DJANGO_GTE_1_7:
+if DJANGO_GTE_1_8:
     import django
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'simple.settings.docs')
     django.setup()
@@ -36,7 +37,7 @@ try:
 except ImportError as err:
     version = '0.1'
     project = u'django-fobi'
-    copyright = u'2014, Artur Barseghyan <artur.barseghyan@gmail.com>'
+    copyright = u'2014-2018, Artur Barseghyan <artur.barseghyan@gmail.com>'
 
 try:
     from simple import settings_docs as docs_settings
@@ -169,9 +170,6 @@ except Exception as e:
             # *****************************************************************
             'fobi.contrib.themes.simple', # Simple theme
         )
-
-        if DJANGO_LTE_1_7:
-            INSTALLED_APPS.append('south')
 
         DATABASES = {
             'default': {
@@ -312,8 +310,11 @@ if not settings.configured:
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-# extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'rst2pdf.pdfbuilder']
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    # 'rst2pdf.pdfbuilder',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

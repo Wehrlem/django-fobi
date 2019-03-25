@@ -6,6 +6,8 @@ import datetime
 import logging
 import os
 
+from collections import OrderedDict
+
 from django.conf import settings
 from django.contrib import messages
 from django.forms.widgets import TextInput
@@ -42,9 +44,14 @@ from .models import (
     FormElementEntry,
     FormHandler,
     FormHandlerEntry,
-    FormWizardHandler
+    FormWizardHandler,
 )
-from .settings import RESTRICT_PLUGIN_ACCESS, DEBUG, WIZARD_FILES_UPLOAD_DIR
+from .settings import (
+    RESTRICT_PLUGIN_ACCESS,
+    DEBUG,
+    WIZARD_FILES_UPLOAD_DIR,
+    SORT_PLUGINS_BY_VALUE,
+)
 
 if DJANGO_GTE_1_10:
     from django.urls import reverse
@@ -53,28 +60,31 @@ else:
 
 __title__ = 'fobi.utils'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
-    'get_allowed_plugin_uids',
-    'get_user_plugins',
-    'get_user_plugin_uids',
-    'sync_plugins',
+    'append_edit_and_delete_links_to_field',
     'get_allowed_form_element_plugin_uids',
-    'get_user_form_element_plugins',
-    'get_user_form_element_plugin_uids',
     'get_allowed_form_handler_plugin_uids',
     'get_allowed_form_wizard_handler_plugin_uids',
-    'get_user_form_handler_plugins',
-    'get_user_form_wizard_handler_plugins',
-    'get_user_form_handler_plugin_uids',
-    'get_user_form_wizard_handler_plugin_uids',
-    'get_user_plugins_grouped',
+    'get_allowed_plugin_uids',
+    'get_user_form_element_plugin_uids',
+    'get_user_form_element_plugins',
     'get_user_form_element_plugins_grouped',
+    'get_user_form_field_plugin_uids',
+    'get_user_form_handler_plugin_uids',
+    'get_user_form_handler_plugins',
     'get_user_form_handler_plugins_grouped',
+    'get_user_form_wizard_handler_plugin_uids',
+    'get_user_form_wizard_handler_plugins',
     'get_user_form_wizard_handler_plugins_grouped',
-    'prepare_form_entry_export_data',
+    'get_user_plugin_uids',
+    'get_user_plugins',
+    'get_user_plugins_grouped',
+    'get_wizard_files_upload_dir',
     'perform_form_entry_import',
+    'prepare_form_entry_export_data',
+    'sync_plugins',
 )
 
 logger = logging.getLogger(__name__)
@@ -202,15 +212,22 @@ def get_user_plugins_grouped(get_allowed_plugin_uids_func,
                              get_registered_plugins_grouped_func,
                              registry,
                              user,
-                             sort_items=True):
+                             sort_items=True,
+                             sort_by_value=False):
     """Get user plugins grouped.
 
-    :param callable get_allowed_plugin_uids_func:
-    :param callable get_registered_plugins_grouped_func:
-    :param fobi.base.BaseRegistry registry: Subclass of
-        ``fobi.base.BaseRegistry`` instance.
-    :param django.contrib.auth.models.User user:
-    :param bool sort_items:
+    :param get_allowed_plugin_uids_func:
+    :param get_registered_plugins_grouped_func:
+    :param registry: Subclass of ``fobi.base.BaseRegistry`` instance.
+    :param user:
+    :param sort_items:
+    :param sort_by_value:
+    :type get_allowed_plugin_uids_func: callable
+    :type get_registered_plugins_grouped_func: callable
+    :type registry: fobi.base.BaseRegistry
+    :type user: django.contrib.auth.models.User
+    :type sort_items: bool
+    :type sort_by_value: bool
     :return dict:
     """
     ensure_autodiscover()
@@ -239,11 +256,17 @@ def get_user_plugins_grouped(get_allowed_plugin_uids_func,
                 registered_plugins[plugin_group] = []
             registered_plugins[plugin_group].append((uid, plugin_name))
 
-    if sort_items:
-        for key, prop in registered_plugins.items():
-            prop.sort()
+    if not sort_items:
+        return registered_plugins
 
-    return registered_plugins
+    ordered_registered_plugins = OrderedDict()
+    for key, prop in sorted(registered_plugins.items()):
+        if sort_by_value:
+            ordered_registered_plugins[key] = sorted(prop, key=lambda t: t[1])
+        else:
+            ordered_registered_plugins[key] = sorted(prop)
+
+    return ordered_registered_plugins
 
 
 def get_user_plugin_uids(get_allowed_plugin_uids_func,
@@ -349,13 +372,15 @@ def get_user_form_element_plugins(user):
     )
 
 
-def get_user_form_element_plugins_grouped(user):
+def get_user_form_element_plugins_grouped(user,
+                                          sort_by_value=SORT_PLUGINS_BY_VALUE):
     """Get user form element plugins grouped."""
     return get_user_plugins_grouped(
         get_allowed_form_element_plugin_uids,
         get_registered_form_element_plugins_grouped,
         form_element_plugin_registry,
-        user
+        user,
+        sort_by_value=sort_by_value
     )
 
 
@@ -450,13 +475,15 @@ def get_user_form_handler_plugins(user,
 #     return user_form_handler_plugins
 
 
-def get_user_form_handler_plugins_grouped(user):
+def get_user_form_handler_plugins_grouped(user,
+                                          sort_by_value=SORT_PLUGINS_BY_VALUE):
     """Get user form handler plugins grouped."""
     return get_user_plugins_grouped(
         get_allowed_form_handler_plugin_uids,
         get_registered_form_handler_plugins,
         form_handler_plugin_registry,
-        user
+        user,
+        sort_by_value=sort_by_value
     )
 
 
@@ -585,13 +612,17 @@ def append_edit_and_delete_links_to_field(form_element_plugin,
         help_text = ''
 
     data_dict = {
-        'help_text': "{0} {1}".format(help_text, help_text_extra),
+        'help_text': u"{0} {1}".format(help_text, help_text_extra),
     }
 
     label = safe_text(getattr(form_element_plugin.data, 'label', ''))
     data_dict.update(
-        {'label': "{0} ({1})".format(label,
-                                     safe_text(form_element_plugin.name))}
+        {
+            'label': u"{0} ({1})".format(
+                label,
+                safe_text(form_element_plugin.name)
+            )
+        }
     )
 
     # if 'hidden' == form_element_plugin.uid:
@@ -692,6 +723,10 @@ def prepare_form_entry_export_data(form_entry,
         'name': form_entry.name,
         'slug': form_entry.slug,
         'is_public': False,
+        'active_date_from': form_entry.active_date_from,
+        'active_date_to': form_entry.active_date_to,
+        'inactive_page_title': form_entry.inactive_page_title,
+        'inactive_page_message': form_entry.inactive_page_message,
         'is_cloneable': False,
         # 'position': form_entry.position,
         'success_page_title': form_entry.success_page_title,
@@ -738,8 +773,13 @@ def perform_form_entry_import(request, form_data):
 
     form_data_keys_whitelist = (
         'name',
+        'title',
         'slug',
         'is_public',
+        'active_date_from',
+        'active_date_to',
+        'inactive_page_title',
+        'inactive_page_message',
         'is_cloneable',
         # 'position',
         'success_page_title',
@@ -748,7 +788,7 @@ def perform_form_entry_import(request, form_data):
     )
 
     # In this way we keep possible trash out.
-    for key in form_data.keys():
+    for key in list(form_data.keys()):
         if key not in form_data_keys_whitelist:
             form_data.pop(key)
 

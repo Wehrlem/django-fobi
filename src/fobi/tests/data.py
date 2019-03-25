@@ -1,9 +1,13 @@
+# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 import copy
 from collections import OrderedDict
 import datetime
+import os
 # from decimal import Decimal
 
-from django.utils.text import force_text
+from django.conf import settings
+from django.utils.encoding import force_text
 
 from faker import Faker
 
@@ -16,8 +20,8 @@ from fobi.contrib.plugins.form_elements.content \
 
 from fobi.contrib.plugins.form_elements.fields \
          .boolean.fobi_form_elements import BooleanSelectPlugin
-# from fobi.contrib.plugins.form_elements.fields.checkbox_select_multiple \
-#          .fobi_form_elements import CheckboxSelectMultipleInputPlugin
+from fobi.contrib.plugins.form_elements.fields.checkbox_select_multiple \
+         .fobi_form_elements import CheckboxSelectMultipleInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
          .date.fobi_form_elements import DateInputPlugin
 # from fobi.contrib.plugins.form_elements.fields \
@@ -28,8 +32,8 @@ from fobi.contrib.plugins.form_elements.fields \
          .decimal.fobi_form_elements import DecimalInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
          .email.fobi_form_elements import EmailInputPlugin
-# from fobi.contrib.plugins.form_elements.fields \
-#          .file.fobi_form_elements import FileInputPlugin
+from fobi.contrib.plugins.form_elements.fields \
+         .file.fobi_form_elements import FileInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
          .float.fobi_form_elements import FloatInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
@@ -48,6 +52,9 @@ from fobi.contrib.plugins.form_elements.fields.select_model_object \
          .fobi_form_elements import SelectModelObjectInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
          .select_multiple.fobi_form_elements import SelectMultipleInputPlugin
+from fobi.contrib.plugins.form_elements.fields \
+         .select_multiple_with_max.fobi_form_elements \
+    import SelectMultipleWithMaxInputPlugin
 from fobi.contrib.plugins.form_elements.fields.slug \
          .fobi_form_elements import SlugInputPlugin
 from fobi.contrib.plugins.form_elements.fields \
@@ -62,11 +69,13 @@ from fobi.contrib.plugins.form_handlers \
 from fobi.contrib.plugins.form_handlers \
          .mail.fobi_form_handlers import MailHandlerPlugin
 from fobi.contrib.plugins.form_handlers \
+         .mail_sender.fobi_form_handlers import MailSenderHandlerPlugin
+from fobi.contrib.plugins.form_handlers \
          .http_repost.fobi_form_handlers import HTTPRepostHandlerPlugin
 
 __title__ = 'fobi.tests.data'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'TEST_DYNAMIC_FORMS_DEFINITION_DATA',
@@ -88,13 +97,6 @@ TEST_FORM_ELEMENT_PLUGIN_DATA = {
         'help_text': "Lorem ipsum boolean",
         'required': False,
     },
-
-    # Add a "Select multiple" (select multiple input) form elelement
-    # force_text(CheckboxSelectMultipleInputPlugin.name): {
-    #     'label': "Test checkbox select multiple input",
-    #     'help_text': "Lorem ipsum select multiple input",
-    #     'required': False,
-    # },
 
     # Add a "Date" input form element
     force_text(DateInputPlugin.name): {
@@ -124,14 +126,13 @@ TEST_FORM_ELEMENT_PLUGIN_DATA = {
         'required': True,
     },
 
-    # TODO: Add file test.
     # Add a "File" (file) form element
-    # force_text(FileInputPlugin.name): {
-    #     'label': "Test file input",
-    #     #'name': "test_file_input",
-    #     'help_text': "Lorem ipsum hidden",
-    #     'required': False,
-    #     },
+    force_text(FileInputPlugin.name): {
+        'label': "Test file input",
+        # 'name': "test_file_input",
+        'help_text': "Lorem ipsum file",
+        'required': False,
+        },
 
     # Add an float input plugin
     force_text(FloatInputPlugin.name): {
@@ -175,6 +176,7 @@ TEST_FORM_ELEMENT_PLUGIN_DATA = {
         'label': "Test select",
         'help_text': "Lorem ipsum text input",
         'required': False,
+        'choices': "1{s}2{s}alpha, Alpha{s}beta".format(s=os.linesep),
     },
 
     # Add a "Select model object" (select input) form element
@@ -189,9 +191,28 @@ TEST_FORM_ELEMENT_PLUGIN_DATA = {
         'label': "Test select multiple input",
         'help_text': "Lorem ipsum select multiple input",
         'required': False,
+        'choices': "1{s}2{s}alpha, Alpha{s}beta".format(s=os.linesep),
     },
 
-    # Add a "Select multiple" (select multiple input) form element
+    # Add a "Select multiple with max" (select multiple with max input) form
+    # element
+    force_text(SelectMultipleWithMaxInputPlugin.name): {
+        'label': "Test select multiple with max input",
+        'help_text': "Lorem ipsum select multiple with max input",
+        'required': False,
+        'choices': "1{s}2{s}alpha, Alpha{s}beta".format(s=os.linesep),
+    },
+
+    # Add a "Checkbox select multiple" (checkbox select multiple input) form
+    # element
+    force_text(CheckboxSelectMultipleInputPlugin.name): {
+        'label': "Test checkbox select multiple input",
+        'help_text': "Lorem ipsum checkbox select multiple input",
+        'required': False,
+        'choices': "1{s}2{s}alpha, Alpha{s}beta".format(s=os.linesep),
+    },
+
+    # Add a "Slug" (slug input) form element
     force_text(SlugInputPlugin.name): {
         'label': "Test slug input",
         'help_text': "Lorem ipsum select multiple input",
@@ -218,6 +239,13 @@ TEST_FORM_ELEMENT_PLUGIN_DATA = {
         'help_text': "Lorem ipsum text area",
         'required': True,
     },
+
+    # Add a "Text" (text input) form element
+    # force_text(TextInputPlugin.name): {
+    #     'label': u"Անուն",
+    #     'help_text': u"Անուն",
+    #     'required': True,
+    # },
 }
 
 TEST_FORM_FIELD_DATA = {
@@ -229,7 +257,11 @@ TEST_FORM_FIELD_DATA = {
     ),
     'test_decimal_input': '10.01',  # Decimal(10.01),
     'test_email_input': 'john@doe.net',
-    # 'test_file_input': '',
+    'test_file_input': os.path.join(
+        settings.MEDIA_ROOT,
+        'testing',
+        'delusional_insanity_-_karima_van_der_voort.jpg'
+    ),
     'test_float_input': '10.01',
     # 'test_hidden_input': '',
     'test_integer': '2014',
@@ -242,6 +274,7 @@ TEST_FORM_FIELD_DATA = {
     'test_text': 'Lorem ipsum',
     'test_text_area': 'Dolor sit amet',
     'test_url_input': 'http://dev.example.com',
+    # 'test_unicode_text': u'Անուն',
 }
 
 TEST_FORM_HANDLER_PLUGIN_DATA = {
@@ -251,6 +284,14 @@ TEST_FORM_HANDLER_PLUGIN_DATA = {
         'from_email': "from@example.com",
         'to_name': "To you",
         'to_email': "to@example.com",
+        'subject': "Test email subject",
+        'body': "Test email body",
+    },
+    force_text(MailSenderHandlerPlugin.name): {
+        'from_name': "From me",
+        'from_email': "from@example.com",
+        'to_name': "To you",
+        'form_field_name_to_email': "test_email_input",
         'subject': "Test email subject",
         'body': "Test email body",
     },
@@ -554,6 +595,7 @@ TEST_DYNAMIC_FORMS_DEFINITION_DATA = OrderedDict([
             '{'
             '"name": "bio", '
             '"required": true, '
+            # '"max_length": null',
             '"label": "Biography"'
             '}'
         )
@@ -574,7 +616,20 @@ TEST_DYNAMIC_FORMS_DEFINITION_DATA = OrderedDict([
             'semper lorem rhoncus sem cras amet."'
             '}'
         )
-    )
+    ),
+    # (
+    #     'unicode_name',
+    #     (
+    #         TextInputPlugin.uid,
+    #         '{'
+    #         '"name": "unicode_name", '
+    #         '"required": true, '
+    #         '"max_length": 200, '
+    #         '"label": u"Անուն", '
+    #         '"placeholder": u"Անուն"'
+    #         '}'
+    #     )
+    # ),
 ])
 
 TEST_DYNAMIC_FORMS_DEFINITION_DATA_DRF = copy.copy(
@@ -603,6 +658,7 @@ TEST_DYNAMIC_FORMS_PUT_DATA_ALL = {
     'special_fields': FAKER.pystr(),
     'number_of_children': FAKER.pyint(),
     'bio': FAKER.text(),
+    # 'unicode_name': u'Անուն',
 }
 
 TEST_DYNAMIC_FORMS_PUT_DATA = copy.copy(TEST_DYNAMIC_FORMS_PUT_DATA_ALL)
@@ -639,6 +695,13 @@ TEST_DYNAMIC_FORMS_OPTIONS_RESPONSE = OrderedDict([
                                          (u'label', u'Number of children')])),
     (u'bio', OrderedDict([(u'type', u'string'),
                           (u'required', True),
+                          # (u'max_length', None),
                           (u'read_only', False),
-                          (u'label', u'Biography')]))
+                          (u'label', u'Biography')])),
+    # (u'unicode_name', OrderedDict([(u'type', u'string'),
+    #                                (u'required', True),
+    #                                (u'read_only', False),
+    #                                (u'label', u'Անուն'),
+    #                                (u'max_length', 200),
+    #                                (u'placeholder', u'Անուն')])),
 ])

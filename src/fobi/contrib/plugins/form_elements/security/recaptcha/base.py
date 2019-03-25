@@ -3,12 +3,14 @@ from __future__ import absolute_import
 import logging
 
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from fobi.base import (
     FormElementPlugin,
     get_theme,
 )
 
+from ......pip_helpers import check_if_installed, get_installed_packages
 from . import UID
 from .forms import ReCaptchaInputForm
 
@@ -28,23 +30,22 @@ except ImportError as e:
 
     # Trying to identify the problem
     try:
-        import pip
-        installed_packages = pip.get_installed_distributions()
-        for installed_package in installed_packages:
-            if "django-simple-captcha" == str(installed_package.key):
-                DJANGO_SIMPLE_CAPTCHA_INSTALLED = True
-                logger.error(
-                    "You have installed  the `django-simple-captcha` in your "
-                    "environment. At the moment you can't have both "
-                    "`django-simple-captcha` and `django-recaptcha` installed "
-                    "alongside due to app name collision (captcha). Remove "
-                    "both packages using pip uninstall and reinstall the"
-                    "`django-recaptcha` if you want to make use of the "
-                    "`fobi.contrib.plugins.form_elements.security.recaptcha` "
-                    "package."
-                )
-            if "django-recaptcha" == str(installed_package.key):
-                DJANGO_RECAPTCHA_INSTALLED = True
+        installed_packages = get_installed_packages()
+
+        if check_if_installed("django-simple-captcha", installed_packages):
+            DJANGO_SIMPLE_CAPTCHA_INSTALLED = True
+            logger.error(
+                "You have installed  the `django-simple-captcha` in your "
+                "environment. At the moment you can't have both "
+                "`django-simple-captcha` and `django-recaptcha` installed "
+                "alongside due to app name collision (captcha). Remove "
+                "both packages using pip uninstall and reinstall the"
+                "`django-recaptcha` if you want to make use of the "
+                "`fobi.contrib.plugins.form_elements.security.recaptcha` "
+                "package."
+            )
+        if check_if_installed("django-recaptcha", installed_packages):
+            DJANGO_RECAPTCHA_INSTALLED = True
 
         if DJANGO_RECAPTCHA_INSTALLED and not DJANGO_SIMPLE_CAPTCHA_INSTALLED:
             logger.error(
@@ -69,7 +70,7 @@ except ImportError as e:
 __title__ = 'fobi.contrib.plugins.form_elements.security.' \
             'recaptcha.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('ReCaptchaInputPlugin',)
 
@@ -97,7 +98,7 @@ class ReCaptchaInputPlugin(FormElementPlugin):
             'help_text': self.data.help_text,
             # 'initial': self.data.initial,
             'required': self.data.required,
-            'widget': ReCaptchaWidget(attrs=widget_attrs),
+            'widget': ReCaptchaWidget(public_key=settings.RECAPTCHA_PUBLIC_KEY, attrs=widget_attrs),
         }
 
         return [(self.data.name, ReCaptchaField, field_kwargs)]

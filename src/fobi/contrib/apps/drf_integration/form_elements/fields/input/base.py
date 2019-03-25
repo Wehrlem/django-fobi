@@ -13,7 +13,7 @@ from . import UID
 __title__ = 'fobi.contrib.apps.drf_integration.form_elements.fields.' \
             'input.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('InputPlugin',)
 
@@ -54,7 +54,9 @@ class InputPlugin(IntegrationFormFieldPlugin,
             field_metadata.update({'disabled': 'disabled'})
 
         if form_element_plugin.data.list_value:
-            field_metadata.update({'list': form_element_plugin.data.list_value})
+            field_metadata.update(
+                {'list': form_element_plugin.data.list_value}
+            )
 
         if form_element_plugin.data.max_value:
             field_metadata.update({'max': form_element_plugin.data.max_value})

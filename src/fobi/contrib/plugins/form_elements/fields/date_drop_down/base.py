@@ -1,18 +1,24 @@
 from __future__ import absolute_import
 
-from django.forms.extras.widgets import SelectDateWidget
 from django.forms.fields import DateField
 from django.utils.translation import ugettext_lazy as _
+
+from nine import versions
 
 from fobi.base import FormFieldPlugin, get_theme
 
 from . import UID
 from .forms import DateDropDownInputForm
 
+if versions.DJANGO_LTE_1_11:
+    from django.forms.extras.widgets import SelectDateWidget
+else:
+    from django.forms.widgets import SelectDateWidget
+
 __title__ = 'fobi.contrib.plugins.form_elements.fields.' \
             'date_drop_down.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('DateDropDownInputPlugin',)
 
@@ -37,7 +43,7 @@ class DateDropDownInputPlugin(FormFieldPlugin):
         }
 
         years = None
-        if self.data.year_min and self.data.year_max:
+        if self.data.year_min is not None and self.data.year_max is not None:
             years = range(self.data.year_min, self.data.year_max)
 
         field_kwargs = {

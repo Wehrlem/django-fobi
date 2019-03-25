@@ -2,7 +2,7 @@ import os
 
 __title__ = 'fobi.defaults'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'CUSTOM_THEME_DATA',
@@ -24,6 +24,7 @@ __all__ = (
     'FORM_IMPORTER_PLUGINS_MODULE_NAME',
     'FORM_WIZARD_HANDLER_PLUGINS_EXECUTION_ORDER',
     'GET_PARAM_INITIAL_DATA',
+    'SORT_PLUGINS_BY_VALUE',
     'INTEGRATION_FORM_ELEMENT_PLUGINS_MODULE_NAME',
     'INTEGRATION_FORM_HANDLER_PLUGINS_MODULE_NAME',
     'RESTRICT_PLUGIN_ACCESS',
@@ -109,6 +110,8 @@ FORM_WIZARD_HANDLER_PLUGINS_EXECUTION_ORDER = (
     # The 'db_store' is left out intentionally, since it should
     # be the last plugin to be executed.
 )
+
+SORT_PLUGINS_BY_VALUE = False
 
 FAIL_ON_MISSING_FORM_ELEMENT_PLUGINS = True
 FAIL_ON_MISSING_FORM_HANDLER_PLUGINS = True

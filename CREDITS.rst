@@ -8,6 +8,14 @@ Contributors
 ------------
 Thanks to the following people for their contributions:
 
+- `Frantisek Holop
+  <https://github.com/barseghyanartur/django-fobi/commits?author=minusf>`_
+  for a lot of fixes/clean-up in documentation and code as well as for
+  introduction of disabling forms based on dates, some of which he did
+  working for RIPE NCC.
+- `Adrien Delhorme
+  <https://github.com/barseghyanartur/django-fobi/commits?author=adrien-delhorme>`_
+  for French translations and some minor fixes.
 - `Maximilian Kindshofer
   <https://github.com/barseghyanartur/django-fobi/commits/master?author=MaximilianKindshofer>`_
   for German translations.

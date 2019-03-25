@@ -4,17 +4,17 @@ from django.test import TestCase
 
 from fobi.dynamic import assemble_form_class
 
-from .base import print_info
+from .core import print_info
 from .data import TEST_DYNAMIC_FORMS_DEFINITION_DATA
 from .helpers import (
     create_form_with_entries,
     get_or_create_admin_user,
-    setup_fobi,
+    setup_app,
 )
 
 __title__ = 'fobi.tests.test_dynamic_forms'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('FobiDynamicFormsTest',)
 
@@ -24,7 +24,7 @@ class FobiDynamicFormsTest(TestCase):
 
     def setUp(self):
         """Set up."""
-        setup_fobi(fobi_sync_plugins=True)
+        setup_app(fobi_sync_plugins=True)
         self.user = get_or_create_admin_user()
         self.form_entry = create_form_with_entries(
             self.user,

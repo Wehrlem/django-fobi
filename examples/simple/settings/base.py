@@ -1,11 +1,10 @@
 # Django settings for example project.
 import os
 from nine.versions import (
+    DJANGO_GTE_2_0,
     DJANGO_GTE_1_10,
-    DJANGO_GTE_1_7,
     DJANGO_GTE_1_8,
     DJANGO_GTE_1_9,
-    DJANGO_LTE_1_7,
 )
 
 
@@ -14,11 +13,13 @@ def project_dir(base):
         os.path.join(os.path.dirname(__file__), base).replace('\\', '/')
     )
 
+
 PROJECT_DIR = project_dir
 
 
 def gettext(s):
     return s
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -70,6 +71,7 @@ LANGUAGES = (
     ('nl', gettext("Dutch")),
     ('ru', gettext("Russian")),
     ('de', gettext("German")),
+    ('fr', gettext("French")),
 )
 
 SITE_ID = 1
@@ -152,7 +154,7 @@ if DJANGO_GTE_1_10:
                 'loaders': [
                     'django.template.loaders.filesystem.Loader',
                     'django.template.loaders.app_directories.Loader',
-                    'django.template.loaders.eggs.Loader',
+                    # 'django.template.loaders.eggs.Loader',
                     'admin_tools.template_loaders.Loader',
                 ],
                 'debug': DEBUG_TEMPLATE,
@@ -200,7 +202,7 @@ else:
         'django.template.loaders.eggs.Loader',
 
     ]
-    if DJANGO_GTE_1_7:
+    if DJANGO_GTE_1_8:
         TEMPLATE_LOADERS.append('admin_tools.template_loaders.Loader')
 
     TEMPLATE_CONTEXT_PROCESSORS = (
@@ -225,7 +227,8 @@ else:
         PROJECT_DIR(os.path.join('..', 'templates')),
     )
 
-MIDDLEWARE_CLASSES = [
+# Final declaration of the middleware is done on the bottom of this file
+_MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -261,11 +264,13 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
 
     # Third party apps used in the project
-    # 'south',  # Database migration app
     # 'tinymce',  # TinyMCE
     'easy_thumbnails',  # Thumbnailer
     'registration',  # Auth views and registration app
     'captcha',
+    'ckeditor',
+    'fobi.reusable.markdown_widget',
+    # 'ckeditor_uploader',
 
     # ***********************************************************************
     # ***********************************************************************
@@ -320,6 +325,7 @@ INSTALLED_APPS = [
     # ************************ Security elements ****************************
     # ***********************************************************************
     'fobi.contrib.plugins.form_elements.security.honeypot',
+    'fobi.contrib.plugins.form_elements.security.invisible_recaptcha',
 
     # ***********************************************************************
     # ************************* Testing elements ****************************
@@ -331,7 +337,9 @@ INSTALLED_APPS = [
     # ***********************************************************************
     'fobi.contrib.plugins.form_elements.content.content_image',
     'fobi.contrib.plugins.form_elements.content.content_image_url',
+    'fobi.contrib.plugins.form_elements.content.content_markdown',
     'fobi.contrib.plugins.form_elements.content.content_text',
+    'fobi.contrib.plugins.form_elements.content.content_richtext',
     'fobi.contrib.plugins.form_elements.content.content_video',
 
     # ***********************************************************************
@@ -342,6 +350,7 @@ INSTALLED_APPS = [
     'fobi.contrib.plugins.form_handlers.db_store',
     'fobi.contrib.plugins.form_handlers.http_repost',
     'fobi.contrib.plugins.form_handlers.mail',
+    'fobi.contrib.plugins.form_handlers.mail_sender',
 
     # ***********************************************************************
     # ***********************************************************************
@@ -360,16 +369,23 @@ INSTALLED_APPS = [
     # ************************ Bootstrap 3 theme ****************************
     # ***********************************************************************
     'fobi.contrib.themes.bootstrap3',  # Bootstrap 3 theme
+
     # DateTime widget
-    'fobi.contrib.themes.bootstrap3.widgets.form_elements.'
-    'datetime_bootstrap3_widget',
+    'fobi.contrib.themes.bootstrap3.widgets.form_elements.datetime_bootstrap3_widget',  # NOQA
 
-    'fobi.contrib.themes.bootstrap3.widgets.form_elements.'
-    'date_bootstrap3_widget',
+    'fobi.contrib.themes.bootstrap3.widgets.form_elements.date_bootstrap3_widget',  # NOQA
 
-    # SliderPercentage widget
-    'fobi.contrib.themes.bootstrap3.widgets.form_elements.'
-    'slider_bootstrap3_widget',
+    # Slider widget
+    'fobi.contrib.themes.bootstrap3.widgets.form_elements.slider_bootstrap3_widget',  # NOQA
+
+    # CKEditor widget
+    'fobi.contrib.themes.bootstrap3.widgets.form_elements.content_richtext_bootstrap3_widget',  # NOQA
+
+    # Invisible reCAPTCHA widget
+    'fobi.contrib.themes.bootstrap3.widgets.form_elements.invisible_recaptcha_bootstrap3_widget',  # NOQA
+
+    # # Markdown
+    # 'fobi.contrib.themes.bootstrap3.widgets.form_elements.content_markdown_bootstrap3_widget',  # NOQA
 
     # ***********************************************************************
     # ************************ Foundation 5 theme ***************************
@@ -405,8 +421,7 @@ INSTALLED_APPS = [
 
     # Form fields
     'fobi.contrib.apps.drf_integration.form_elements.fields.boolean',
-    'fobi.contrib.apps.drf_integration.form_elements.fields'
-    '.checkbox_select_multiple',
+    'fobi.contrib.apps.drf_integration.form_elements.fields.checkbox_select_multiple',  # NOQA
     'fobi.contrib.apps.drf_integration.form_elements.fields.date',
     'fobi.contrib.apps.drf_integration.form_elements.fields.date_drop_down',
     'fobi.contrib.apps.drf_integration.form_elements.fields.datetime',
@@ -425,13 +440,10 @@ INSTALLED_APPS = [
     'fobi.contrib.apps.drf_integration.form_elements.fields.range_select',
     'fobi.contrib.apps.drf_integration.form_elements.fields.regex',
     'fobi.contrib.apps.drf_integration.form_elements.fields.select',
-    # 'fobi.contrib.apps.drf_integration.form_elements.fields'
-    # '.select_model_object',
+    # 'fobi.contrib.apps.drf_integration.form_elements.fields.select_model_object',  # NOQA
     'fobi.contrib.apps.drf_integration.form_elements.fields.select_multiple',
-    # 'fobi.contrib.apps.drf_integration.form_elements.fields'
-    # '.select_multiple_model_objects',
-    'fobi.contrib.apps.drf_integration.form_elements.fields'
-    '.select_multiple_with_max',
+    # 'fobi.contrib.apps.drf_integration.form_elements.fields.select_multiple_model_objects',  # NOQA
+    'fobi.contrib.apps.drf_integration.form_elements.fields.select_multiple_with_max',  # NOQA
     'fobi.contrib.apps.drf_integration.form_elements.fields.slider',
     'fobi.contrib.apps.drf_integration.form_elements.fields.slug',
     'fobi.contrib.apps.drf_integration.form_elements.fields.text',
@@ -441,13 +453,16 @@ INSTALLED_APPS = [
 
     # Presentational elements
     'fobi.contrib.apps.drf_integration.form_elements.content.content_image',
-    'fobi.contrib.apps.drf_integration.form_elements.content.content_image_url',
+    'fobi.contrib.apps.drf_integration.form_elements.content.content_image_url',  # NOQA
+    'fobi.contrib.apps.drf_integration.form_elements.content.content_markdown',
+    'fobi.contrib.apps.drf_integration.form_elements.content.content_richtext',
     'fobi.contrib.apps.drf_integration.form_elements.content.content_text',
     'fobi.contrib.apps.drf_integration.form_elements.content.content_video',
 
     # Form handlers
     'fobi.contrib.apps.drf_integration.form_handlers.db_store',
     'fobi.contrib.apps.drf_integration.form_handlers.mail',
+    'fobi.contrib.apps.drf_integration.form_handlers.mail_sender',
     'fobi.contrib.apps.drf_integration.form_handlers.http_repost',
 
     # ***********************************************************************
@@ -458,8 +473,26 @@ INSTALLED_APPS = [
     'foo',  # Test app
 ]
 
-if DJANGO_LTE_1_7:
-    INSTALLED_APPS.append('south')
+STATIC_ROOT = PROJECT_DIR(os.path.join('..', '..', 'static'))
+CKEDITOR_UPLOAD_PATH = PROJECT_DIR(
+    os.path.join('..', '..', 'media', 'uploads')
+)
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent',
+             'HorizontalRule', '-', 'JustifyLeft', 'JustifyCenter',
+             'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink', 'Image'],
+            ['Table'],
+            ['RemoveFormat'],
+        ],
+        # 'height': 300,
+        'width': '100%',
+    }
+}
 
 # LOGIN_URL = '/accounts/login/'
 # LOGIN_REDIRECT_URL = '/fobi/' # Important for passing the selenium tests
@@ -513,8 +546,7 @@ FOBI_CUSTOM_THEME_DATA = {
             ],
             'success_page_template_choices': [
                 (
-                    'fobi/bootstrap3_extras/embed_form_entry_'
-                    'submitted_ajax.html',
+                    'fobi/bootstrap3_extras/embed_form_entry_submitted_ajax.html',  # NOQA
                     gettext("Custom bootstrap3 embed form entry submitted "
                             "template")
                 ),
@@ -529,8 +561,7 @@ FOBI_CUSTOM_THEME_DATA = {
             ],
             'success_page_template_choices': [
                 (
-                    'fobi/bootstrap3_extras/embed_form_entry_submitted_'
-                    'ajax.html',
+                    'fobi/bootstrap3_extras/embed_form_entry_submitted_ajax.html',  # NOQA
                     gettext("Custom bootstrap3 embed form entry submitted "
                             "template")
                 ),
@@ -553,8 +584,7 @@ FOBI_CUSTOM_THEME_DATA = {
             ],
             'success_page_template_choices': [
                 (
-                    'fobi/foundation5_extras/embed_form_entry_submitted_'
-                    'ajax.html',
+                    'fobi/foundation5_extras/embed_form_entry_submitted_ajax.html',  # NOQA
                     gettext("Custom foundation5 embed form entry submitted "
                             "template")
                 ),
@@ -569,8 +599,7 @@ FOBI_CUSTOM_THEME_DATA = {
             ],
             'success_page_template_choices': [
                 (
-                    'fobi/foundation5_extras/embed_form_entry_submitted_'
-                    'ajax.html',
+                    'fobi/foundation5_extras/embed_form_entry_submitted_ajax.html',  # NOQA
                     gettext("Custom foundation5 embed form entry submitted "
                             "template")
                 ),
@@ -592,6 +621,11 @@ FOBI_CUSTOM_THEME_DATA = {
 }
 
 FOBI_THEME_FOOTER_TEXT = gettext('&copy; django-fobi example site 2014-2015')
+
+FOBI_PLUGIN_MAIL_AUTO_MAIL_TO = ['to@example.info']
+FOBI_PLUGIN_MAIL_AUTO_MAIL_SUBJECT = 'Automatic email'
+FOBI_PLUGIN_MAIL_AUTO_MAIL_BODY = 'Automatic email'
+FOBI_PLUGIN_MAIL_AUTO_MAIL_FROM = 'from@example.com'
 
 # django-admin-tools custom dashboard
 ADMIN_TOOLS_INDEX_DASHBOARD = 'admin_tools_dashboard.CustomIndexDashboard'
@@ -699,18 +733,8 @@ LOGGING = {
 }
 
 # Make settings quite compatible among various Django versions used.
-if DJANGO_GTE_1_7 or DJANGO_GTE_1_8:
+if DJANGO_GTE_1_8:
     INSTALLED_APPS = list(INSTALLED_APPS)
-
-    # Django 1.7 specific checks
-    if DJANGO_GTE_1_7:
-        try:
-            INSTALLED_APPS.remove('south') \
-                if 'south' in INSTALLED_APPS else None
-            INSTALLED_APPS.remove('tinymce') \
-                if 'tinymce' in INSTALLED_APPS else None
-        except Exception as e:
-            pass
 
     # Django 1.8 specific checks
     if DJANGO_GTE_1_8:
@@ -743,7 +767,7 @@ if DEBUG and DEBUG_TOOLBAR:
         import debug_toolbar
 
         # debug_toolbar
-        MIDDLEWARE_CLASSES += (
+        _MIDDLEWARE += (
             'debug_toolbar.middleware.DebugToolbarMiddleware',
         )
 
@@ -756,6 +780,12 @@ if DEBUG and DEBUG_TOOLBAR:
         }
     except ImportError:
         pass
+
+# Only now make proper assignments
+if DJANGO_GTE_2_0:
+    MIDDLEWARE = _MIDDLEWARE
+else:
+    MIDDLEWARE_CLASSES = _MIDDLEWARE
 
 if DEBUG:
     try:
@@ -770,6 +800,23 @@ if DEBUG:
         )
     except ImportError:
         pass
+
+# if DEBUG:
+#     try:
+#         # Make sure the django-template-debug is installed. You can then
+#         # in templates use it as follows:
+#         #
+#         # {% load debug_tags %}
+#         # {% set_trace %}
+#         import debug_toolbar_mongo
+#         INSTALLED_APPS += (
+#             'debug_toolbar_mongo',
+#         )
+#         DEBUG_TOOLBAR_PANELS = (
+#             'debug_toolbar_mongo.panel.MongoDebugPanel',
+#         )
+#     except ImportError:
+#         pass
 
 # Make the `django-fobi` package available without installation.
 if DEV:
