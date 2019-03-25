@@ -8,6 +8,12 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 # from nonefield.fields import NoneField
 
+try:
+    from ckeditor.widgets import CKEditorWidget
+    CKEDITOR_INSTALLED = True
+except ImportError:
+    CKEDITOR_INSTALLED = False
+
 from .base import (
     get_registered_form_element_plugins,
     get_registered_form_handler_plugins,
@@ -37,7 +43,7 @@ from .validators import url_exists
 
 __title__ = 'fobi.forms'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'BulkChangeFormElementPluginsForm',
@@ -70,8 +76,19 @@ class FormEntryForm(forms.ModelForm):
         """Meta class."""
 
         model = FormEntry
-        fields = ('name', 'title', 'is_public', 'success_page_title',
-                  'success_page_message', 'action',)  # 'is_cloneable',
+        fields = (
+            'name',
+            'title',
+            'is_public',
+            'active_date_from',
+            'active_date_to',
+            'inactive_page_title',
+            'inactive_page_message',
+            'success_page_title',
+            'success_page_message',
+            'action',
+            # 'is_cloneable',
+        )
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
@@ -99,9 +116,34 @@ class FormEntryForm(forms.ModelForm):
             attrs={'class': theme.form_element_html_class}
         )
 
-        self.fields['success_page_message'].widget = forms.widgets.Textarea(
+        self.fields['inactive_page_title'].widget = forms.widgets.TextInput(
             attrs={'class': theme.form_element_html_class}
         )
+
+        self.fields['active_date_from'].widget = forms.widgets.DateTimeInput(
+            format='%Y-%m-%d %H:%M',
+            attrs={'class': theme.form_element_html_class}
+        )
+
+        self.fields['active_date_to'].widget = forms.widgets.DateTimeInput(
+            format='%Y-%m-%d %H:%M',
+            attrs={'class': theme.form_element_html_class}
+        )
+
+        if CKEDITOR_INSTALLED:
+            self.fields['success_page_message'].widget = CKEditorWidget(
+                attrs={'class': theme.form_element_html_class}
+            )
+            self.fields['inactive_page_message'].widget = CKEditorWidget(
+                attrs={'class': theme.form_element_html_class}
+            )
+        else:
+            self.fields['success_page_message'].widget = forms.widgets.Textarea(
+                attrs={'class': theme.form_element_html_class}
+            )
+            self.fields['inactive_page_message'].widget = forms.widgets.Textarea(
+                attrs={'class': theme.form_element_html_class}
+            )
 
         self.fields['action'].widget = forms.widgets.TextInput(
             attrs={'class': theme.form_element_html_class}

@@ -1,3 +1,7 @@
+from django.conf import settings
+
+from nine import versions
+
 import requests
 
 from requests.exceptions import (
@@ -9,8 +13,10 @@ from requests.exceptions import (
     RetryError
 )
 
-from django.conf import settings
-from django.core.urlresolvers import resolve, Resolver404
+if versions.DJANGO_LTE_1_11:
+    from django.core.urlresolvers import resolve, Resolver404
+else:
+    from django.urls import resolve, Resolver404
 
 try:
     from localeurl.utils import strip_path
@@ -19,7 +25,7 @@ except ImportError as err:
 
 __title__ = 'fobi.validators'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2013-2017 Artur Barseghyan'
+__copyright__ = '2013-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('url_exists',)
 

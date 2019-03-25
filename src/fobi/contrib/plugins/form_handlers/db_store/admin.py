@@ -2,14 +2,12 @@ from django.conf import settings
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from nine.versions import DJANGO_LTE_1_5
-
 from .helpers import DataExporter
 from .models import SavedFormDataEntry, SavedFormWizardDataEntry
 
 __title__ = 'fobi.contrib.plugins.form_handlers.db_store.admin'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'SavedFormDataEntryAdmin',
@@ -40,23 +38,10 @@ class BaseSavedFormDataEntryAdmin(admin.ModelAdmin):
             ),
         )
 
-    def __queryset(self, request):
-        """Get queryset.
-
-        Used internally."""
-        if DJANGO_LTE_1_5:
-            queryset = super(BaseSavedFormDataEntryAdmin, self).queryset(
-                request
-            )
-        else:
-            queryset = super(BaseSavedFormDataEntryAdmin, self).get_queryset(
-                request
-            )
-
-        return queryset
-    get_queryset = __queryset
-    if DJANGO_LTE_1_5:
-        queryset = __queryset
+    def get_queryset(self, request):
+        """Get queryset."""
+        qs = super(BaseSavedFormDataEntryAdmin, self).get_queryset(request)
+        return qs
 
     def export_data(self, request, queryset):
         """Export data into XLS."""
@@ -97,7 +82,7 @@ class SavedFormDataEntryAdmin(BaseSavedFormDataEntryAdmin):
         """Meta class."""
 
         app_label = _('Saved form data entry')
-    #
+
     # class Media:
     #     """Media class."""
     #
@@ -108,30 +93,6 @@ class SavedFormDataEntryAdmin(BaseSavedFormDataEntryAdmin):
     #             settings.STATIC_URL
     #         ),
     #     )
-    #
-    # def __queryset(self, request):
-    #     """Get queryset.
-    #
-    #     Used internally."""
-    #     if DJANGO_LTE_1_5:
-    #         queryset = super(SavedFormDataEntryAdmin, self).queryset(request)
-    #     else:
-    #         queryset = super(SavedFormDataEntryAdmin, self).get_queryset(
-    #             request
-    #         )
-    #
-    #     return queryset
-    # get_queryset = __queryset
-    # if DJANGO_LTE_1_5:
-    #     queryset = __queryset
-    #
-    # def export_data(self, request, queryset):
-    #     """Export data into XLS."""
-    #     data_exporter = DataExporter(queryset)
-    #
-    #     return data_exporter.graceful_export()
-    #
-    # export_data.short_description = _('Export data to CSV/XLS')
 
 
 admin.site.register(SavedFormDataEntry, SavedFormDataEntryAdmin)

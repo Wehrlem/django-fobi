@@ -21,7 +21,7 @@ from .forms import URLInputForm
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.url.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('URLInputPlugin',)
 
@@ -52,7 +52,15 @@ class URLInputPlugin(FormFieldPlugin):
             'required': self.data.required,
             'widget': URLInput(attrs=widget_attrs),
         }
+
         if self.data.max_length:
-            field_kwargs['max_length'] = int(self.data.max_length)
+            try:
+                field_kwargs['max_length'] = int(self.data.max_length)
+            except ValueError:
+                field_kwargs['max_length'] = None
+        else:
+            field_kwargs['max_length'] = None
+
+        field_kwargs['min_length'] = None
 
         return [(self.data.name, URLField, field_kwargs)]

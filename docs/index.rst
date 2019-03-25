@@ -10,22 +10,8 @@ handling the submitted form data).
 
 Prerequisites
 =============
-Present
--------
-- Django 1.8, 1.9, 1.10 and 1.11.
-- Python 2.7, 3.4, 3.5, 3.6 and PyPy.
-
-Past
-----
-- Dropping support of Django 1.5, 1.6 has been announced in version
-  0.9.13. Dropping support of Django 1.7 has been announced in version 0.9.17.
-  As of 0.9.17 everything is still backwards compatible with versions 1.5, 1.6
-  and 1.7, but in future versions compatibility with these versions will be
-  wiped out.
-- Dropping support of Python 2.6 has been announced in version 0.9.17.
-  As of 0.9.17 everything is still backwards compatible with Python 2.6, but
-  in future versions compatibility with it will be wiped out.
-- Since version 0.10.4 support for Python 3.3 has been dropped.
+- Django 1.8, 1.9, 1.10, 1.11, 2.0 and 2.1.
+- Python 2.7, 3.4, 3.5, 3.6, 3.7 and PyPy.
 
 Key concepts
 ============
@@ -37,12 +23,12 @@ Key concepts
 - Number of form elements is not limited.
 - Each form may contain handlers. Handler processes the form data (for example,
   saves it or mails it). Number of the handlers is not limited.
-- Both form elements and form handlers are made with Django permission system 
+- Both form elements and form handlers are made with Django permission system
   in mind.
-- As an addition to form handlers, form callbacks are implemented. Form 
+- As an addition to form handlers, form callbacks are implemented. Form
   callbacks are fired on various stages of pre- and post-processing the form
   data (on POST). Form callbacks do not make use of permission system (unless
-  you intentionally do so in the code of your callback) and are fired for all 
+  you intentionally do so in the code of your callback) and are fired for all
   forms (unlike form handlers, that are executed only if assigned).
 - Each plugin (form element or form handler) or a callback - is a Django
   micro-app.
@@ -62,21 +48,25 @@ Main features and highlights
 - `Form wizards`_. Combine your forms into wizards. Form wizards may contain
   handlers. Handler processes the form wizard data (for example, saves it or
   mails it). Number of the form wizard handlers is not limited.
+- Forms can be automatically enabled/disabled based on dates (start date, end
+  date).
 - Anti-spam solutions like `CAPTCHA
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/captcha>`_,
   `ReCAPTCHA
-  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/recaptcha>`_
-  or `Honeypot
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/recaptcha>`_,
+  `Honeypot
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/honeypot>`_
+  or `Invisible reCAPTCHA
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/invisible_recaptcha>`__
   come out of the box (CAPTCHA and ReCAPTCHA do require additional third-party
-  apps to be installed).
+  apps to be installed; Invisible reCAPTCHA doesn't).
 - In addition to standard form elements, there are cosmetic (presentational)
   form elements (for adding a piece of text, image or a embed video)
   alongside standard form elements.
 - Data handling in plugins (form handlers). Save the data, mail it to some
   address or re-post it to some other endpoint. See the
   `Bundled form handler plugins`_ for more information.
-- Developer-friendly API, which allows to edit existing or build new form 
+- Developer-friendly API, which allows to edit existing or build new form
   fields and handlers without touching the core.
 - Support for custom user model.
 - `Theming`_. There are 4 ready to use `Bundled themes`_: "Bootstrap 3",
@@ -111,7 +101,14 @@ Roadmap
 =======
 Some of the upcoming/in-development features/improvements are:
 
-- Bootstrap 4 and Foundation 6 support (in version 0.13).
+- Implement disabling forms based on dates.
+- Class based views.
+- Cloning of forms.
+- JSON schema support.
+- Webpack integration.
+- Improved Django REST framework OPTIONS.
+- Bootstrap 4 support.
+- Foundation 6 support.
 
 See the `TODOS
 <https://raw.githubusercontent.com/barseghyanartur/django-fobi/master/TODOS.rst>`_
@@ -122,8 +119,7 @@ Some screenshots
 ================
 See the documentation for some screen shots:
 
-- `PythonHosted <http://pythonhosted.org/django-fobi/#screenshots>`_
-- `ReadTheDocs <http://django-fobi.readthedocs.org/en/latest/#screenshots>`_
+- `ReadTheDocs <http://django-fobi.readthedocs.org/#screenshots>`_
 
 Demo
 ====
@@ -179,7 +175,7 @@ If quick installer doesn't work for you, see the manual steps on running the
 
 Quick start
 ===========
-See the `quick start <http://pythonhosted.org/django-fobi/quickstart.html>`_.
+See the `quick start <http://django-fobi.readthedocs.io/en/latest/quickstart.html>`_.
 
 Installation
 ============
@@ -269,28 +265,46 @@ Or latest stable version from BitBucket:
         'fobi.contrib.plugins.form_handlers.db_store',
         'fobi.contrib.plugins.form_handlers.http_repost',
         'fobi.contrib.plugins.form_handlers.mail',
+        'fobi.contrib.plugins.form_handlers.mail_sender',
 
         # Other project specific apps
         'foo', # Test app
         # ...
     )
 
+(3) Make appropriate changes to the ``TEMPLATES`` of the your projects'
+    Django settings.
 
-(3) Make appropriate changes to the ``TEMPLATE_CONTEXT_PROCESSORS`` of the your
-    projects' Django settings.
-
-And the following to the context processors.
+And ``fobi.context_processors.theme`` and
+``fobi.context_processors.dynamic_values``. See the following example.
 
 .. code-block:: python
 
-    TEMPLATE_CONTEXT_PROCESSORS = (
-        # ...
-        "fobi.context_processors.theme",
-        # ...
-    )
+    TEMPLATES = [
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': [(os.path.join('path', 'to', 'your', 'templates'))],
+            'OPTIONS': {
+                'context_processors': [
+                    "django.template.context_processors.debug",
+                    'django.template.context_processors.request',
+                    "django.contrib.auth.context_processors.auth",
+                    "django.contrib.messages.context_processors.messages",
+                    "fobi.context_processors.theme",  # Important!
+                    "fobi.context_processors.dynamic_values",  # Optional
+                ],
+                'loaders': [
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                    'admin_tools.template_loaders.Loader',
+                ],
+                'debug': DEBUG_TEMPLATE,
+            }
+        },
+    ]
 
 Make sure that ``django.core.context_processors.request`` is in
-``TEMPLATE_CONTEXT_PROCESSORS`` too.
+``context_processors`` too.
 
 (4) Configure URLs
 
@@ -398,9 +412,12 @@ Defining the Sample textarea plugin.
         name = "Sample Textarea"
         form = SampleTextareaForm
         group = "Samples" # Group to which the plugin belongs to
-        
-        def get_form_field_instances(self, request=None, form_entry=None,
-                                     form_element_entries=None, **kwargs):
+
+        def get_form_field_instances(self,
+                                     request=None,
+                                     form_entry=None,
+                                     form_element_entries=None,
+                                     **kwargs):
             kwargs = {
                 'required': self.data.required,
                 'label': self.data.label,
@@ -435,24 +452,28 @@ widget in edit mode. In the view mode, the original widget that you
 assigned in your form element plugin would be used.
 
 There might be cases, when you need to do additional handling of the data upon
-the successful form submission. In such cases, you will need to define a 
-``submit_plugin_form_data`` method in the plugin, which accepts the 
+the successful form submission. In such cases, you will need to define a
+``submit_plugin_form_data`` method in the plugin, which accepts the
 following arguments:
 
 - `form_entry` (fobi.models.FormEntry): Form entry, which is being submitted.
 - `request` (django.http.HttpRequest): The Django HTTP request.
-- `form` (django.forms.Form): Form object (a valid one, which contains 
+- `form` (django.forms.Form): Form object (a valid one, which contains
   the ``cleaned_data`` attribute).
 - `form_element_entries` (fobi.models.FormElementEntry): Form element entries
   for the `form_entry` given.
 - (**)kwargs : Additional arguments.
-  
+
 Example (taken from fobi.contrib.plugins.form_elements.fields.file):
 
 .. code-block:: python
 
-    def submit_plugin_form_data(self, form_entry, request, form,
-                                form_element_entries=None, **kwargs):
+    def submit_plugin_form_data(self,
+                                form_entry,
+                                request,
+                                form,
+                                form_element_entries=None,
+                                **kwargs):
         """Submit plugin form data."""
         # Get the file path
         file_path = form.cleaned_data.get(self.data.name, None)
@@ -511,7 +532,7 @@ Form for for ``SampleTextareaPlugin`` form element plugin.
         initial = forms.CharField(label="Initial", required=False)
         required = forms.BooleanField(label="Required", required=False)
 
-Note that although it's not being checked in the code, but for form 
+Note that although it's not being checked in the code, but for form
 field plugins the following fields should be present in the plugin
 form (``BasePluginForm``) and the form plugin (``FormFieldPlugin``):
 
@@ -522,7 +543,7 @@ before it gets saved. For that purpose, ``save_plugin_data`` method
 has been introduced.
 
 See the following `example
-<https://github.com/barseghyanartur/django-fobi/blob/stable/src/fobi/contrib/plugins/form_elements/content/image/forms.py>`_.
+<https://github.com/barseghyanartur/django-fobi/blob/stable/src/fobi/contrib/plugins/form_elements/content/content_image/forms.py>`_.
 
 .. code-block:: python
 
@@ -743,8 +764,11 @@ Defining the form for Sample mail handler plugin.
         to_name = forms.CharField(label=_("To name"), required=True)
         to_email = forms.EmailField(label=_("To email"), required=True)
         subject = forms.CharField(label=_("Subject"), required=True)
-        body = forms.CharField(label=_("Body"), required=False,
-                               widget=forms.widgets.Textarea)
+        body = forms.CharField(
+            label=_("Body"),
+            required=False,
+            widget=forms.widgets.Textarea
+        )
 
 After the plugin has been processed, all its' data is available in a
 ``plugin_instance.data`` container (for example,
@@ -754,8 +778,8 @@ Prioritise the execution order
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Some form handlers shall be executed prior others. A good example of such, is
 a combination of "mail" and "db_save" form handlers for the form. In case if
-large files are posted, submission of form data would fail if "mail" plugin 
-would be executed after "db_save" has been executed. That's why it's possible 
+large files are posted, submission of form data would fail if "mail" plugin
+would be executed after "db_save" has been executed. That's why it's possible
 to prioritise that ordering in a ``FOBI_FORM_HANDLER_PLUGINS_EXECUTION_ORDER``
 setting variable.
 
@@ -881,7 +905,7 @@ Defining the Sample importer plugin.
         """Sample importer plugin."""
 
         uid = 'sample_importer'
-        name = _("Sample importer)
+        name = _("Sample importer")
         wizard = SampleImporterWizardView
         templates = [
             'sample_importer/0.html',
@@ -1045,7 +1069,8 @@ Defining the wizard view for Sample importer plugin.
             )
 
             redirect_url = reverse(
-                'fobi.edit_form_entry', kwargs={'form_entry_id': form_entry.pk}
+                'fobi.edit_form_entry',
+                kwargs={'form_entry_id': form_entry.pk}
             )
 
             messages.info(
@@ -1135,7 +1160,7 @@ Custom action for the form
 --------------------------
 Sometimes, you would want to specify a different action for the form.
 Although it's possible to define a custom form action (``action`` field
-in the "Form properties" tab), you're advised to use the ``http_repost`` 
+in the "Form properties" tab), you're advised to use the ``http_repost``
 plugin instead, since then the form would be still validated locally
 and only then the valid data, as is, would be sent to the desired
 endpoint.
@@ -1424,7 +1449,7 @@ Directory structure
     │       │   └── override-simple-theme.css
     │       └── js
     │           └── override-simple-theme.js
-    │       
+    │
     ├── templates
     │   └── override_simple_theme
     │       ├── snippets
@@ -1519,6 +1544,9 @@ README.rst file in directory of each plugin for details.
 - `Mail
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_handlers/mail/>`__:
   Send the form data by email.
+- `Mail the sender
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_handlers/mail_sender/>`__:
+  Send the form data by email to the sender (submitter) of the form.
 
 Integration with third-party apps and frameworks
 ================================================
@@ -1755,7 +1783,7 @@ There are several management commands available.
   occur when some plugin which did exist in the system, no longer exists.
 - `fobi_sync_plugins`. Should be ran each time a new plugin is being added to
   the `django-fobi`.
-- `fobi_update_plugin_data`. A mechanism to update existing plugin data in 
+- `fobi_update_plugin_data`. A mechanism to update existing plugin data in
   case if it had become invalid after a change in a plugin. In order for it
   to work, each plugin should implement and ``update`` method, in which the
   data update happens.
@@ -1765,7 +1793,7 @@ Tuning
 There are number of `django-fobi` settings you can override in the settings
 module of your Django project:
 
-- `FOBI_RESTRICT_PLUGIN_ACCESS` (bool): If set to True, (Django) permission 
+- `FOBI_RESTRICT_PLUGIN_ACCESS` (bool): If set to True, (Django) permission
   system for dash plugins is enabled. Defaults to True. Setting this to False
   makes all plugins available for all users.
 - `FOBI_DEFAULT_THEME` (str): Active (default) theme UID. Defaults to
@@ -1860,6 +1888,13 @@ complete and content rich.
 - `Content text
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/content/content_text/>`_:
   Add text.
+- `Content richtext
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/content/content_richtext/>`_:
+  Add rich text (based on `django-ckeditor <https://github.com/django-ckeditor/django-ckeditor>`_
+  package).
+- `Content markdown
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/content/content_markdown/>`_:
+  Add markdown text.
 - `Content video
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/content/content_video/>`_:
   Add an embed YouTube or Vimeo video.
@@ -1868,10 +1903,13 @@ Security
 ~~~~~~~~
 - `CAPTCHA
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/captcha/>`__:
-  Captcha integration, requires ``django-simple-captcha`` package.
+  CAPTCHA integration, requires ``django-simple-captcha`` package.
 - `ReCAPTCHA
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/recaptcha/>`__:
-  Captcha integration, requires ``django-recaptcha`` package.
+  CAPTCHA integration, requires ``django-recaptcha`` package.
+- `Invisible ReCAPTCHA
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/invisible_recaptcha/>`__:
+  Google invisible reCAPTCHA integration, with no additional dependencies.
 - `Honeypot
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_elements/security/honeypot/>`__:
   `Anti-spam honeypot <http://en.wikipedia.org/wiki/Anti-spam_techniques#Honeypots>`_
@@ -1906,6 +1944,9 @@ in directory of each plugin for details.
 - `Mail
   <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_handlers/mail/>`__:
   Send the form data by email.
+- `Mail the sender
+  <https://github.com/barseghyanartur/django-fobi/tree/stable/src/fobi/contrib/plugins/form_handlers/mail_sender/>`__:
+  Send the form data by email to the sender.
 
 Bundled themes
 --------------
@@ -1976,18 +2017,26 @@ Dynamic initial values
 It's possible to provide a dynamic initial value for any of the text elements.
 In order to do that, you should use the build-in context processor or make
 your own one. The only requirement is that you should store all values that
-should be exposes in the form as a dict for ``fobi_dynamic_values`` dictionary
+should be exposed in the form as a dict for ``fobi_dynamic_values`` dictionary
 key. Beware, that passing the original request object might be unsafe in
 many ways. Currently, a stripped down version of the request object is being
 passed as a context variable.
 
 .. code-block:: python
 
-    TEMPLATE_CONTEXT_PROCESSORS = (
-        # ...
-        "fobi.context_processors.dynamic_values",
-        # ...
-    )
+    TEMPLATES = [
+        {
+            # ...
+            'OPTIONS': {
+                # ...
+                'context_processors': [
+                    # ...
+                    "fobi.context_processors.theme",  # Important!
+                    "fobi.context_processors.dynamic_values",  # Optional
+                ]
+            },
+        },
+    ]
 
 .. code-block:: python
 
@@ -2107,7 +2156,7 @@ Rendering forms using third-party libraries
 ===========================================
 You might want to render your forms using third-party libraries such as
 `django-crispy-forms <http://django-crispy-forms.readthedocs.org/>`_,
-`django-floppyforms <http://django-floppyforms.readthedocs.org/>`_ or 
+`django-floppyforms <http://django-floppyforms.readthedocs.org/>`_ or
 other alternatives.
 
 For that purpose you should override the "snippets/form_snippet.html" used
@@ -2159,20 +2208,58 @@ and want to reuse those forms on another. You could of course re-create entire
 form in the GUI, but we can do better than that. It's possible to export forms
 into JSON format and import the exported forms again. It's preferable that
 you run both instances on the same versions of `django-fobi`, otherwise imports
-might break (although it might just work). There are two scenarios to deal with
-missing plugin errors, which you have don't yet have full control of. If both
-instances have the same set of form element and form handler plugins imports
-should go smoothly. It is though possible to make an import ignoring missing
-form element and form handler plugins. You would get an appropriate notice
-about that, but import will continue leaving the broken plugin data out.
+might break (although it might just work). There many ways to deal with
+missing plugin errors, but the chosen strategy (which you don't yet have full
+control of) is safest (import everything possible, but warn user about errors).
+If both instances have the same set of form element and form handler plugins
+imports should go smoothly. It is though possible to make an import ignoring
+missing form element and form handler plugins. You would get an appropriate
+notice about that, but import will continue leaving the broken plugin data out.
 
+Translations
+============
 Available translations
-======================
-English is the primary language.
+----------------------
+English is the primary language. The following translations are
+available (core and plugins)
 
-- `Dutch <https://django-fobi.herokuapp.com/nl/>`_ (core and plugins)
-- `German <https://django-fobi.herokuapp.com/de/>`_ (core and plugins)
-- `Russian <https://django-fobi.herokuapp.com/ru/>`_ (core and plugins)
+- `Dutch <https://django-fobi.herokuapp.com/nl/>`_
+- `German <https://django-fobi.herokuapp.com/de/>`_
+- `Russian <https://django-fobi.herokuapp.com/ru/>`_
+- `French <https://django-fobi.herokuapp.com/fr/>`_
+
+Overriding translations
+-----------------------
+There might be cases when you want to override certain translations. It's
+easily achievable with introduction of custom locale paths in your project.
+
+See the following as a good example of overriding some English plugin labels.
+
+- `custom settings
+  <https://raw.githubusercontent.com/barseghyanartur/django-fobi/master/examples/simple/settings/alternative_labels.py>`__
+- `custom locales directory
+  <https://github.com/barseghyanartur/django-fobi/tree/master/examples/simple/fobi_locale/>`__
+
+Run the example project as follows:
+
+.. code-block:: sh
+
+    cd examples/simple/
+    ./manage.py runserver --settings=settings.alternative_labels
+
+In the example given, "Boolean" and "Checkbox select multiple" plugin names
+are renamed to "Checkbox" and "Multiple checkboxes" respectively.
+
+All built-in plugin ``name`` values are almost equivalent to the plugin ``uid``
+values. By default plugins are sorted by ``uid`` value. When you override the
+``name`` of the plugin, sorting breaks. Therefore, it's recommended to
+set the ``FOBI_SORT_PLUGINS_BY_VALUE`` value to True in your settings module.
+Default value is False, which means that plugins are sorted by their ``uid``
+value.
+
+.. code-block:: python
+
+    FOBI_SORT_PLUGINS_BY_VALUE = True
 
 Debugging
 =========
@@ -2201,7 +2288,7 @@ If you have forms referring to form element- of form handler- plugins
 that are currently missing (not registered, removed, failed to load - thus
 there would be a risk that your form would't be rendered properly/fully and
 the necessary data handling wouldn't happen either) you will get an
-appropriate exception. Although it's fine to get an instant error message about 
+appropriate exception. Although it's fine to get an instant error message about
 such failures in development, in production is wouldn't look appropriate.
 Thus, there are two settings related to the non-existing (not-found) form
 element- and form handler- plugins.
@@ -2219,6 +2306,12 @@ Testing
 =======
 Project is covered by test (functional- and browser-tests).
 
+.. note::
+
+    You are recommended to use Postgres or MySQL for testing. Tests
+    occasionally fail on SQLite due to very intensive IO and SQLite table
+    locking.
+
 To test with all supported Python/Django versions type:
 
 .. code-block:: sh
@@ -2229,7 +2322,7 @@ To test against specific environment, type:
 
 .. code-block:: sh
 
-    tox -e pypy-django18
+    tox -e py37-django21
 
 To test just your working environment type:
 
@@ -2242,7 +2335,7 @@ install the test requirements:
 
 .. code-block:: sh
 
-    pip install -r examples/requirements/common_test_requirements.txt
+    pip install -r examples/requirements/test.txt
 
 Browser tests
 -------------
@@ -2296,6 +2389,12 @@ Set up headless Firefox
    .. code-block:: sh
 
         ./scripts/tox.sh
+
+   Or run specific tox tests using headless Firefox.
+
+   .. code-block:: sh
+
+        ./scripts/tox.sh -e py36-django111
 
 Setup PhantomJS
 ~~~~~~~~~~~~~~~
@@ -2722,6 +2821,7 @@ they will be listed in the options action call. All content fields are of type
 
 - content_image
 - content_image_url
+- content_richtext
 - content_text
 - content_video
 
@@ -2810,6 +2910,7 @@ the core plugins:
 - fobi.contrib.plugins.form_elements.fields.url
 - fobi.contrib.plugins.form_elements.content.content_image
 - fobi.contrib.plugins.form_elements.content.content_image_url
+- fobi.contrib.plugins.form_elements.content.content_richtext
 - fobi.contrib.plugins.form_elements.content.content_text
 - fobi.contrib.plugins.form_elements.content.content_video
 - fobi.contrib.plugins.form_handlers.db_store
@@ -2849,6 +2950,7 @@ in the ``INSTALLED_APPS`` as well:
 - fobi.contrib.apps.drf_integration.form_elements.fields.url
 - fobi.contrib.apps.drf_integration.form_elements.content.content_image
 - fobi.contrib.apps.drf_integration.form_elements.content.content_image_url
+- fobi.contrib.apps.drf_integration.form_elements.content.content_richtext
 - fobi.contrib.apps.drf_integration.form_elements.content.content_text
 - fobi.contrib.apps.drf_integration.form_elements.content.content_video
 - fobi.contrib.apps.drf_integration.form_handlers.db_store
@@ -2915,6 +3017,7 @@ See the `example settings file
         # DRF integration form element plugins - presentational
         'fobi.contrib.apps.drf_integration.form_elements.content.content_image',
         'fobi.contrib.apps.drf_integration.form_elements.content.content_image_url',
+        'fobi.contrib.apps.drf_integration.form_elements.content.content_richtext',
         'fobi.contrib.apps.drf_integration.form_elements.content.content_text',
         'fobi.contrib.apps.drf_integration.form_elements.content.content_video',
 
@@ -3393,6 +3496,71 @@ it will be listed in the options action call.
 - ``content`` (str): Representation of the content. Rendered partial HTML.
 - ``raw`` (json dict): Raw attributes of the ``ContentImageURL`` plugin.
   Contains "url", "alt", "fit_method" and "size" attributes.
+
+
+fobi.contrib.apps.drf_integration.form_elements.content.content_richtext
+########################################################################
+A ``django-fobi`` ContentRichText plugin for integration with
+``Django REST framework``. Makes use of the
+``fobi.contrib.apps.drf_integration.fields.ContentRichText``.
+
+Installation
+^^^^^^^^^^^^
+(1) Add ``fobi.contrib.apps.drf_integration.form_elements.content.content_richtext``
+    to the ``INSTALLED_APPS`` in your ``settings.py``.
+
+    .. code-block:: python
+
+        INSTALLED_APPS = (
+            # ...
+            'fobi.contrib.apps.drf_integration.form_elements.content.content_richtext',
+            # ...
+        )
+
+(2) In the terminal type:
+
+    .. code-block:: sh
+
+        ./manage.py fobi_sync_plugins
+
+(3) Assign appropriate permissions to the target users/groups to be using
+    the plugin if ``FOBI_RESTRICT_PLUGIN_ACCESS`` is set to True.
+
+Usage
+^^^^^
+Unlike standard fields, ``ContentText`` field is purely presentational.
+You're not supposed to make write actions on it (it won't work). Neither
+will it be displayed in the browsable API (list/retrieve actions). However,
+it will be listed in the options action call.
+
+**Sample JSON response fragment**
+
+.. code-block:: javascript
+
+    "actions": {
+        "PUT": {
+            // ...
+            "content_text_89c8c319-195b-487a-a44d-f59ef14a5d44": {
+                "type": "content",
+                "required": false,
+                "read_only": true,
+                "contenttype": "text",
+                "content": "\n<p>\n\nLorem ipsum dolor sit amet.\n\n\n</p>\n",
+                "raw": {
+                    "text": "Lorem ipsum dolor sit amet."
+                }
+            },
+            // ...
+        }
+    }
+
+**JSON response fragment explained**
+
+- ``type`` (str): Set to "content" for all presentational form elements.
+- ``contenttype`` (str): Set to "text" for ``ContentText`` field.
+- ``content`` (str): Representation of the content. Rendered partial HTML.
+- ``raw`` (json dict): Raw attributes of the ``ContentText`` plugin. Contains
+  "text" attribute.
 
 
 fobi.contrib.apps.drf_integration.form_elements.content.content_text
@@ -4861,6 +5029,105 @@ Installation
         }
 
 
+fobi.contrib.plugins.form_elements.content.content_richtext
+-----------------------------------------------------------
+
+A ``Fobi`` Rich text form element plugin based on
+`CKEditor <https://ckeditor.com/>`_ and
+`django-ckeditor <https://github.com/django-ckeditor/django-ckeditor>`_.
+
+Installation
+~~~~~~~~~~~~
+
+(1) Install ``django-ckeditor``.
+
+    .. code-block:: sh
+
+        pip install django-ckeditor
+
+(2) Add ``ckeditor`` to ``INSTALLED_APPS`` in ``settings.py``.
+
+    .. code-block:: python
+
+        INSTALLED_APPS = (
+            ...
+            'ckeditor',
+            ...
+        )
+
+(3) Add ``fobi.contrib.plugins.form_elements.content.content_richtext`` to
+    ``INSTALLED_APPS`` in ``settings.py``.
+
+    .. code-block:: python
+
+        INSTALLED_APPS = (
+            ...
+            'fobi.contrib.plugins.form_elements.content.content_richtext',
+            ...
+        )
+
+(4) Add ``fobi.contrib.themes.bootstrap3.widgets.form_elements.content_richtext_bootstrap3_widget`` to
+    ``INSTALLED_APPS`` in ``settings.py`` (if you're using ``bootstrap3`` theme).
+    If you're using another theme, add correspondent widget specific to the
+    active theme.
+
+    .. code-block:: python
+
+        INSTALLED_APPS = (
+            ...
+            'fobi.contrib.themes.bootstrap3.widgets.form_elements.content_richtext_bootstrap3_widget',
+            ...
+        )
+
+(5) In the terminal type:
+
+    .. code-block:: sh
+
+        ./manage.py fobi_sync_plugins
+
+(6) Assign appropriate permissions to the target users/groups to be using
+    the plugin if ``FOBI_RESTRICT_PLUGIN_ACCESS`` is set to ``True``.
+
+Controlling HTML tags and attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(1) Install ``bleach``.
+
+    .. code-block:: sh
+
+        pip install bleach
+
+(2) Specify ``FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_TAGS``,
+    ``FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_ATTRIBUTES`` and
+    ``FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_STYLES`` in
+    ``settings.py``. The default values come from bleach:
+
+    .. code-block:: python
+
+        FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_TAGS = [
+            'a',
+            'abbr',
+            'acronym',
+            'b',
+            'blockquote',
+            'code',
+            'em',
+            'i',
+            'li',
+            'ol',
+            'strong',
+            'ul',
+        ]
+
+        FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_ATTRIBUTES = {
+            'a': ['href', 'title'],
+            'abbr': ['title'],
+            'acronym': ['title'],
+        }
+
+        FOBI_PLUGIN_CONTENT_RICHTEXT_ALLOWED_STYLES = []
+
+
 fobi.contrib.plugins.form_elements.content.content_video
 --------------------------------------------------------
 A ``Fobi`` Video form element plugin.
@@ -5200,6 +5467,9 @@ Installation
     set the ``FOBI_PLUGIN_FIELDS_FILE_FILES_UPLOAD_DIR`` value to the desired
     (relative) path.
 
+(5) You may optionally restrict uploaded files extensions by specifying the
+    ``allowed_extensions`` field in the plugin.
+
 
 fobi.contrib.plugins.form_elements.fields.float
 -----------------------------------------------
@@ -5476,7 +5746,7 @@ Installation
     values: "val", "repr" or "mix" to get the desired behaviour.
 
 Usage
------
+~~~~~
 You should be entering a single choice per line. Choice might
 consist of just a single value or value/label pair.
 
@@ -6080,7 +6350,7 @@ Installation
     following values: "val", "repr" or "mix" to get the desired behaviour.
 
 Usage
------
+~~~~~
 You should be entering a single choice per line. Choice might
 consist of just a single value or value/label pair. If you enter an integer in
 the 'max_choices' field, the user can choose only <max_choices> or less choices.
@@ -6303,11 +6573,11 @@ fobi.contrib.plugins.form_elements.security.captcha
 ---------------------------------------------------
 A `CAPTCHA <http://en.wikipedia.org/wiki/CAPTCHA>`_ form field plugin. Makes
 use of the `django-simple-captcha
-<http://readthedocs.org/docs/django-simple-captcha>`_.
+<http://django-simple-captcha.readthedocs.io/en/latest/>`_.
 
 Prerequisites
 ~~~~~~~~~~~~~
-You will need ``libfreetype6``, otherwise ``django-captcha`` won't work.
+You will need ``libfreetype6``, otherwise ``django-simple-captcha`` won't work.
 
 .. code-block:: sh
 
@@ -6328,9 +6598,7 @@ Taken from django-simple-captcha `installation instructions
 
 (2) Add ``captcha`` to the ``INSTALLED_APPS`` in your ``settings.py``.
 
-(3) Run ``python manage.py syncdb`` (or ``python manage.py migrate`` if you are
-    managing database migrations via South) to create the required database
-    tables.
+(3) Run ``python manage.py migrate``.
 
 (4) Add an entry to your ``urls.py``:
 
@@ -6362,6 +6630,19 @@ Install `fobi` Captcha plugin
 (3) Assign appropriate permissions to the target users/groups to be using
     the plugin if ``FOBI_RESTRICT_PLUGIN_ACCESS`` is set to True.
 
+(4) In order to have nicer text input widget, add the following line
+    to your settings (if you're using bootstrap3 theme):
+
+    .. code-block:: python
+
+        CAPTCHA_TEXT_FIELD_TEMPLATE = 'bootstrap3/captcha/text_field.html'
+
+    For foundation5 theme add the following line:
+
+    .. code-block:: python
+
+        CAPTCHA_TEXT_FIELD_TEMPLATE = 'foundation5/captcha/text_field.html'
+
 Troubleshooting and usage limitations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In combination with other captcha solutions
@@ -6370,9 +6651,7 @@ At the moment, you can't use both ``CAPTCHA``
 (fobi.contrib.plugins.form_elements.security.captcha) and ``ReCAPTCHA``
 (fobi.contrib.plugins.form_elements.security.recaptcha) plugins alongside due
 to app name collision of the ``django-simple-captcha`` and ``django-recaptcha``
-packages. That limitation is likely to be solved in future in the
-``django-recaptcha`` package. Until then, you should choose either one or
-another, but not both on the same time.
+packages.
 
 Usage
 ~~~~~
@@ -6428,9 +6707,7 @@ Install `django-recaptcha`
 
 (2) Add ``captcha`` to the ``INSTALLED_APPS`` in your ``settings.py``.
 
-(3) Run ``python manage.py syncdb`` (or ``python manage.py migrate`` if you are
-   managing database migrations via South) to create the required database
-   tables.
+(3) Run ``python manage.py migrate``.
 
 Install `fobi` ReCAPTCHA plugin
 ###############################
@@ -6454,7 +6731,7 @@ Install `fobi` ReCAPTCHA plugin
 (3) Assign appropriate permissions to the target users/groups to be using
    the plugin if ``FOBI_RESTRICT_PLUGIN_ACCESS`` is set to True.
 
-(4) Specify the following ReCAPTCHA credentials in your settings.
+(4) Specify the following ReCAPTCHA credentials in your settings:
 
     .. code-block:: text
 
@@ -6469,13 +6746,11 @@ At the moment, you can't use both ``CAPTCHA``
 (fobi.contrib.plugins.form_elements.security.captcha) and ``ReCAPTCHA``
 (fobi.contrib.plugins.form_elements.security.recaptcha) plugins alongside due
 to app name collision of the ``django-simple-captcha`` and ``django-recaptcha``
-packages. That limitation is likely to be solved in future in the
-``django-recaptcha`` package. Until then, you should choose either one or
-another, but not both on the same time.
+packages.
 
 If you happen to see errors like "Input error: k: Format of site key was
 invalid", make sure to have defined (and filled in properly) the
-``RECAPTCHA_PUBLIC_KEY`` and ``RECAPTCHA_PRIVATE_KEY`` in your settnings.py.
+``RECAPTCHA_PUBLIC_KEY`` and ``RECAPTCHA_PRIVATE_KEY`` in your settings.py.
 See the `following <https://github.com/praekelt/django-recaptcha/issues/32>`_
 thread for more information.
 

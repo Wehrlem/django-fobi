@@ -3,10 +3,13 @@
 .gitignore~
 ghostdriver.log
 .hg/
+.eggs/
+.vscode/
 .hgtags
 .tox/
 .travis.yml~
 .zip
+*~
 /.coverage
 /dev.db
 /.cache/
@@ -14,8 +17,11 @@ ghostdriver.log
 /third_party/
 *.py,cover
 /.idea/
+/.pytest_cache/
+tags
 codebin.py
 examples/mezzanine_example/dev.db
+geckodriver.log
 
 MANIFEST.in~
 MIND_BUCKET.rst
@@ -40,6 +46,7 @@ README_PARTS.rst
 /src/fobi/contrib/plugins/form_elements/fields/hidden_model_object/
 /src/fobi/contrib/plugins/form_importers/mailchimp_importer/bucket.py
 /src/fobi/contrib/apps/wagtail_integration_/
+/src/fobi/contrib/themes/bootstrap3/widgets/form_elements/date_bootstrap3_widget/static/bootstrap3/js/fobi.plugin.date-bootstrap3-widget-exp.js
 
 /scripts/install_django_1_7_wagtail.sh
 /scripts/reinstall_django_1_7_wagtail.sh
@@ -64,6 +71,7 @@ README_PARTS.rst
 /examples/quick_start/db.sqlite3
 /examples/quickstart/
 /examples/static/
+/examples/_static/
 /examples/requirements/wagtail.txt
 #/examples/wagtaildemo/
 /examples/wagtail_example_/
@@ -72,3 +80,4 @@ README_PARTS.rst
 /examples/wagtaildemo/static
 /examples/wagtaildemo/media
 /examples/wagtaildemo/Vagrantfile.local
+/src/fobi/contrib/themes/bootstrap3/widgets/form_elements/content_markdown_bootstrap3_widget

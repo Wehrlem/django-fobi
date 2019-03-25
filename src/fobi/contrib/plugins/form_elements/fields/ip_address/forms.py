@@ -8,9 +8,9 @@ from fobi.widgets import NumberInput
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.ip_address.forms'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
-__all__ = ('TextInputForm',)
+__all__ = ('IPAddressInputForm',)
 
 theme = get_theme(request=None, as_instance=True)
 

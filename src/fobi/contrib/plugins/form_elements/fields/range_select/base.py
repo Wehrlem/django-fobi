@@ -21,7 +21,7 @@ from .settings import (
 
 __title__ = 'fobi.contrib.plugins.form_elements.fields.range_select.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('RangeSelectInputPlugin',)
 
@@ -66,10 +66,10 @@ class RangeSelectInputPlugin(FormFieldPlugin):
         Might be used in integration plugins.
         """
         max_value = int(self.data.max_value) \
-            if self.data.max_value \
+            if self.data.max_value is not None \
             else INITIAL_MAX_VALUE
         min_value = int(self.data.min_value) \
-            if self.data.min_value \
+            if self.data.min_value is not None \
             else INITIAL_MIN_VALUE
         step = int(self.data.step) if self.data.step else STEP
 

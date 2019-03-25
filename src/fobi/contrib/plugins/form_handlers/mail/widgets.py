@@ -8,7 +8,7 @@ from .settings import MULTI_EMAIL_FIELD_VALUE_SPLITTER
 
 __title__ = 'fobi.contrib.plugins.form_handlers.mail.widgets'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('MultiEmailWidget',)
 
@@ -30,7 +30,10 @@ class MultiEmailWidget(Textarea):
             return MULTI_EMAIL_FIELD_VALUE_SPLITTER.join(value)
         raise ValidationError('Invalid format.')
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, **kwargs):
         """Render."""
         value = self.prep_value(value)
-        return super(MultiEmailWidget, self).render(name, value, attrs)
+        return super(MultiEmailWidget, self).render(name,
+                                                    value,
+                                                    attrs,
+                                                    **kwargs)

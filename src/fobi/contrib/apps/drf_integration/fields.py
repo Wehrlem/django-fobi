@@ -15,10 +15,12 @@ from rest_framework.fields import (
 
 __title__ = 'fobi.contrib.apps.drf_integration.fields'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2016-2017 Artur Barseghyan'
+__copyright__ = '2016-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'ContentImageField',
+    'ContentMarkdownField',
+    'ContentRichTextField',
     'ContentTextField',
     'ContentVideoField',
     'ModelChoiceField',
@@ -140,10 +142,17 @@ class ContentTextField(NoneField):
     """Content text field."""
 
 
+class ContentRichTextField(NoneField):
+    """Content rich text field."""
+
+
+class ContentMarkdownField(NoneField):
+    """Content markdown field."""
+
+
 class ContentImageField(NoneField):
     """Content image field."""
 
 
 class ContentVideoField(NoneField):
     """Content video field."""
-

@@ -14,7 +14,7 @@ from .forms import DecimalInputForm
 __title__ = 'fobi.contrib.plugins.form_elements.fields.' \
             'decimal.base'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('DecimalInputPlugin',)
 
@@ -43,25 +43,25 @@ class DecimalInputPlugin(FormFieldPlugin):
             'required': self.data.required,
         }
 
-        if self.data.initial:
+        if self.data.initial is not None:
             data_initial = decimal.Decimal(str(self.data.initial))
             field_kwargs.update({'initial': data_initial})
 
-        if self.data.max_value:
+        if self.data.max_value is not None:
             data_max_value = decimal.Decimal(str(self.data.max_value))
             field_kwargs['max_value'] = data_max_value
             widget_attrs['max'] = data_max_value
 
-        if self.data.min_value:
+        if self.data.min_value is not None:
             data_min_value = decimal.Decimal(str(self.data.min_value))
             field_kwargs['min_value'] = data_min_value
             widget_attrs['min'] = data_min_value
 
-        if self.data.max_digits:
+        if self.data.max_digits is not None:
             data_max_digits = int(self.data.max_digits)
             field_kwargs['max_digits'] = data_max_digits
 
-        if self.data.decimal_places:
+        if self.data.decimal_places is not None:
             data_decimal_places = int(self.data.decimal_places)
             field_kwargs['decimal_places'] = data_decimal_places
 

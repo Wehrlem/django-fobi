@@ -1,14 +1,11 @@
 from __future__ import unicode_literals
 
 import copy
-from collections import Mapping
-
+from collections import Mapping, OrderedDict
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-
-from nine.versions import DJANGO_GTE_1_7
 
 from rest_framework.compat import unicode_to_repr
 from rest_framework.exceptions import ErrorDetail, ValidationError
@@ -33,15 +30,10 @@ import six
 
 from . import UID as INTEGRATE_WITH_UID
 
-if DJANGO_GTE_1_7:
-    from collections import OrderedDict
-else:
-    from django.utils.datastructures import SortedDict as OrderedDict
-
 
 __title__ = 'fobi.contrib.apps.drf_integration.dynamic'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'assemble_serializer_class',

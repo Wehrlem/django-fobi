@@ -4,6 +4,13 @@
 
 {% block page-title %}{% blocktrans with form_element_plugin.name as plugin_name %}Add "{{ plugin_name }}" element to the form{% endblocktrans %}{% endblock page-title %}
 
+{% block extrahead %}
+    {% if form %}
+        {{ form.media.css }}
+    {% endif %}
+    {{ block.super }}
+{% endblock extrahead %}
+
 {% block navbar-menu-content %}
 {% endblock navbar-menu-content %}
 
@@ -18,3 +25,10 @@
 
 {% block sidebar-content %}
 {% endblock sidebar-content %}
+
+{% block theme-javascripts %}
+    {{ block.super }}
+    {% if form %}
+        {{ form.media.js }}
+    {% endif %}
+{% endblock theme-javascripts %}

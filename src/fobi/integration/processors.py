@@ -5,7 +5,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
-from nine.versions import DJANGO_GTE_1_8
+from nine.versions import DJANGO_GTE_1_8, DJANGO_GTE_1_10
 
 from ..base import (
     fire_form_callbacks,
@@ -26,7 +26,7 @@ from ..settings import GET_PARAM_INITIAL_DATA
 
 __title__ = 'fobi.integration.processors'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = ('IntegrationProcessor',)
 
@@ -95,6 +95,19 @@ class IntegrationProcessor(object):
         """Get login required template name."""
         return self.login_required_template_name or None
 
+    def get_process_form_redirect_url(self, request, instance):
+        """Get process form redirect URL (success).
+
+        :param django.http.HttpRequest request:
+        :param fobi.models.FormEntry instance:
+        :return str:
+        """
+        return "{0}?{1}={2}".format(
+            request.path,
+            self.form_sent_get_param,
+            instance.form_entry.slug
+        )
+
     def _process_form(self, request, instance, **kwargs):
         """Process form.
 
@@ -107,10 +120,15 @@ class IntegrationProcessor(object):
         """
         template_name = self.get_form_template_name(request, instance)
 
+        if DJANGO_GTE_1_10:
+            user_is_authenticated = request.user.is_authenticated
+        else:
+            user_is_authenticated = request.user.is_authenticated()
+
         # Handle public/non-public forms. If form requires user authentication
         # redirect to login form with next parameter set to current request
         # path.
-        if not request.user.is_authenticated() \
+        if not user_is_authenticated \
                 and not instance.form_entry.is_public:
             if self.can_redirect:
                 return redirect(
@@ -190,9 +208,7 @@ class IntegrationProcessor(object):
 
                 if self.can_redirect:
                     return redirect(
-                        "{0}?{1}={2}".format(request.path,
-                                             self.form_sent_get_param,
-                                             instance.form_entry.slug)
+                        self.get_process_form_redirect_url(request, instance)
                     )
                 else:
                     return self._show_thanks_page(request, instance, **kwargs)

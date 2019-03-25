@@ -1,24 +1,17 @@
+from django.forms.utils import (
+    ErrorDict as DjangoErrorDict,
+    ErrorList as DjangoErrorList,
+)
 from django.utils.encoding import force_text
-
-from nine.versions import DJANGO_GTE_1_7
 
 __title__ = 'fobi.form_utils'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
-__copyright__ = '2014-2017 Artur Barseghyan'
+__copyright__ = '2014-2019 Artur Barseghyan'
 __license__ = 'GPL 2.0/LGPL 2.1'
 __all__ = (
     'ErrorDict',
     'ErrorList',
 )
-
-if DJANGO_GTE_1_7:
-    from django.forms.utils import (
-        ErrorDict as DjangoErrorDict, ErrorList as DjangoErrorList
-    )
-else:
-    from django.forms.util import (
-        ErrorDict as DjangoErrorDict, ErrorList as DjangoErrorList
-    )
 
 
 class ErrorDict(DjangoErrorDict):
